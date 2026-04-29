@@ -1,4 +1,3 @@
-import { createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
 import { RSVPConfirmation } from '@/emails/RSVPConfirmation'
 import { NextResponse } from 'next/server'

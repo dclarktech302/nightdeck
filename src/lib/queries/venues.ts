@@ -1,10 +1,10 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createPublicClient } from '@/lib/supabase/server'
 
 /**
  * Returns all active venues for the public Shore Pulse venue directory.
  */
 export async function getPublicVenues() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('venues')
@@ -24,7 +24,7 @@ export async function getPublicVenues() {
  * Returns a single active venue by id for the public venue page.
  */
 export async function getPublicVenueById(id: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('venues')

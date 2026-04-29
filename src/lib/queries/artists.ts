@@ -1,11 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createPublicClient } from '@/lib/supabase/server'
 
 /**
  * Returns all vetted artists for the public Shore Pulse artist directory.
  * Private fields (contact, rate, rider) are filtered by RLS for anon requests.
  */
 export async function getPublicArtists() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('artists')
@@ -25,7 +25,7 @@ export async function getPublicArtists() {
  * Returns a single vetted artist by id for the public profile page.
  */
 export async function getPublicArtistById(id: string) {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('artists')

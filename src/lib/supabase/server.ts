@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import type { Database } from '@/types/database.types'
 
@@ -22,5 +23,15 @@ export async function createClient() {
         },
       },
     }
+  )
+}
+
+// Always runs as anon — no session cookie, no authenticated context.
+// Use for all public Shore Pulse queries: events, artists, venues.
+// Guarantees consistent RLS behavior regardless of visitor auth state.
+export function createPublicClient() {
+  return createSupabaseClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!
   )
 }

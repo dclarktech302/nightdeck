@@ -168,6 +168,7 @@ export type Database = {
           rsvp_count: number
           rsvp_limit: number | null
           show_start: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["event_status"]
           venue_id: string | null
         }
@@ -187,6 +188,7 @@ export type Database = {
           rsvp_count?: number
           rsvp_limit?: number | null
           show_start?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           venue_id?: string | null
         }
@@ -206,6 +208,7 @@ export type Database = {
           rsvp_count?: number
           rsvp_limit?: number | null
           show_start?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           venue_id?: string | null
         }

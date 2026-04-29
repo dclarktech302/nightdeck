@@ -42,7 +42,8 @@ export function RSVPForm({ eventId, eventName }: RSVPFormProps) {
       } else if (res.ok) {
         setState('success')
       } else {
-        console.error('RSVP error:', json)
+        console.error('RSVP status:', res.status)
+        console.error('RSVP response:', JSON.stringify(json))
         setState('error')
       }
     } catch (err) {

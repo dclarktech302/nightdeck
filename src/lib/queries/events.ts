@@ -103,7 +103,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
     `)
     .eq('slug', slug)
     .eq('status', 'confirmed')
-    .single()
+    .maybeSingle()
 
   if (error) {
     console.error('getEventBySlug error:', error)

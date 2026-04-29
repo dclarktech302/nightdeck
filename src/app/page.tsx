@@ -1,65 +1,139 @@
-import Image from "next/image";
+import { getFeaturedEvents, getUpcomingEvents } from '@/lib/queries/events'
+import { ParticleField } from '@/components/canvas/ParticleField'
+import { SiteNav } from '@/components/ui/SiteNav'
+import { EventCard } from '@/components/ui/EventCard'
 
-export default function Home() {
+export default async function HomePage() {
+  // Both run in parallel — not sequential
+  const [featured, upcoming] = await Promise.all([
+    getFeaturedEvents(),
+    getUpcomingEvents(),
+  ])
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <>
+      {/* Particle field — the one showstopper, fixed behind everything */}
+      <ParticleField density={60} />
+
+      <SiteNav />
+
+      {/* -- HERO -- */}
+      <section className="relative min-h-screen flex items-center justify-center px-6">
+
+        {/* Ambient gold orb — depth without grid texture */}
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse, oklch(0.78 0.15 85 / 0.05) 0%, transparent 65%)' }}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+        <div className="relative z-10 text-center max-w-3xl">
+
+          {/* Eyebrow */}
+          <p
+            className="text-xs tracking-[0.4em] uppercase mb-8 font-medium"
+            style={{ color: '#c9a84c' }}
+          >
+            Eastern Shore · Delaware · Maryland
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+
+          {/* Headline */}
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-6">
+            What&apos;s happening
+            <br />
+            <span
+              className="text-glow"
+              style={{ color: '#c9a84c' }}
+            >
+              on the Shore.
+            </span>
+          </h1>
+
+          {/* Subhead */}
+          <p className="text-lg text-white/40 max-w-xl mx-auto mb-12">
+            Curated events, vetted artists, real venues.
+            No noise — only what&apos;s worth showing up for.
+          </p>
+
+          {/* CTA */}
           <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/events"
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300 hover:scale-105"
+            style={{
+              background: 'oklch(0.78 0.15 85 / 0.1)',
+              border: '1px solid oklch(0.78 0.15 85 / 0.4)',
+              color: '#c9a84c',
+              boxShadow: '0 0 20px oklch(0.78 0.15 85 / 0.1)',
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+            Browse events →
           </a>
         </div>
-      </main>
-    </div>
-  );
+      </section>
+
+      {/* -- FEATURED EVENTS -- */}
+      {featured.length > 0 && (
+        <section className="max-w-6xl mx-auto px-6 pb-24">
+          <div className="flex items-center gap-4 mb-8">
+            <span
+              className="text-xs tracking-[0.3em] uppercase font-semibold"
+              style={{ color: '#c9a84c' }}
+            >
+              Featured
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {featured.map(event => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* -- UPCOMING EVENTS -- */}
+      {upcoming.length > 0 && (
+        <section className="max-w-6xl mx-auto px-6 pb-32">
+          <div className="flex items-center gap-4 mb-8">
+            <span
+              className="text-xs tracking-[0.3em] uppercase font-semibold"
+              style={{ color: '#c9a84c' }}
+            >
+              Upcoming
+            </span>
+            <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {upcoming.map(event => (
+              <EventCard key={event.id} event={event} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Empty state — no events yet */}
+      {featured.length === 0 && upcoming.length === 0 && (
+        <section className="max-w-6xl mx-auto px-6 pb-32 text-center">
+          <p className="text-white/20 text-sm">Events coming soon.</p>
+        </section>
+      )}
+
+      {/* -- FOOTER -- */}
+      <footer
+        className="border-t px-6 py-8 text-center"
+        style={{ borderColor: 'rgba(255,255,255,0.06)' }}
+      >
+        <p className="text-xs text-white/20">
+          Shore Pulse · Built by{' '}
+          <a
+            href="https://denkoregroup.com"
+            className="hover:text-white/40 transition-colors"
+          >
+            Denkore Group
+          </a>
+        </p>
+      </footer>
+    </>
+  )
 }

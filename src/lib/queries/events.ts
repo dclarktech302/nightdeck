@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createPublicClient } from '@/lib/supabase/server'
 import type { EventWithVenue, EventWithLineup } from '@/types'
 
 // ─── Public queries (Shore Pulse) ────────────────────────────
@@ -9,7 +9,7 @@ import type { EventWithVenue, EventWithLineup } from '@/types'
  * Used by the Shore Pulse homepage and /events page.
  */
 export async function getUpcomingEvents(): Promise<EventWithVenue[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -39,7 +39,7 @@ export async function getUpcomingEvents(): Promise<EventWithVenue[]> {
  * Returns the 3 featured confirmed events for the homepage hero.
  */
 export async function getFeaturedEvents(): Promise<EventWithVenue[]> {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -75,8 +75,8 @@ export async function getFeaturedEvents(): Promise<EventWithVenue[]> {
  * Note: we match on a generated slug pattern using the event id
  * for now. In v0.5.0 we'll add a slug column to events.
  */
-export async function getEventById(id: string): Promise<EventWithLineup | null> {
-  const supabase = await createClient()
+export async function getEventBySlug(slug: string): Promise<EventWithLineup | null> {
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('events')
@@ -101,12 +101,12 @@ export async function getEventById(id: string): Promise<EventWithLineup | null> 
         )
       )
     `)
-    .eq('id', id)
-    .eq('status', 'confirmed') // RLS also enforces this — belt and suspenders
-    .single()                  // .single() returns one row or null, not an array
+    .eq('slug', slug)
+    .eq('status', 'confirmed')
+    .maybeSingle()
 
   if (error) {
-    console.error('getEventById error:', error)
+    console.error('getEventBySlug error:', error)
     return null
   }
 

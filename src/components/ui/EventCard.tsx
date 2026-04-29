@@ -20,7 +20,7 @@ export function EventCard({ event }: EventCardProps) {
   const venue = event.venues
 
   return (
-    <Link href={`/events/${event.id}`} className="group block">
+    <Link href={`/events/${event.slug ?? event.id}`} className="group block">
       <div
         className="relative rounded-xl overflow-hidden transition-all duration-300"
         style={{

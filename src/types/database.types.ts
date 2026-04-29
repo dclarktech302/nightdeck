@@ -28,6 +28,7 @@ export type Database = {
           name: string
           org_id: string
           photo_url: string | null
+          slug: string | null
           spotify_url: string | null
           tech_rider: string | null
           vetted: boolean
@@ -45,6 +46,7 @@ export type Database = {
           name: string
           org_id: string
           photo_url?: string | null
+          slug?: string | null
           spotify_url?: string | null
           tech_rider?: string | null
           vetted?: boolean
@@ -62,6 +64,7 @@ export type Database = {
           name?: string
           org_id?: string
           photo_url?: string | null
+          slug?: string | null
           spotify_url?: string | null
           tech_rider?: string | null
           vetted?: boolean
@@ -168,6 +171,7 @@ export type Database = {
           rsvp_count: number
           rsvp_limit: number | null
           show_start: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["event_status"]
           venue_id: string | null
         }
@@ -187,6 +191,7 @@ export type Database = {
           rsvp_count?: number
           rsvp_limit?: number | null
           show_start?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           venue_id?: string | null
         }
@@ -206,6 +211,7 @@ export type Database = {
           rsvp_count?: number
           rsvp_limit?: number | null
           show_start?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["event_status"]
           venue_id?: string | null
         }
@@ -422,6 +428,7 @@ export type Database = {
           instagram_url: string | null
           name: string
           org_id: string
+          slug: string | null
           state: string | null
           vibe_tags: string[] | null
         }
@@ -437,6 +444,7 @@ export type Database = {
           instagram_url?: string | null
           name: string
           org_id: string
+          slug?: string | null
           state?: string | null
           vibe_tags?: string[] | null
         }
@@ -452,6 +460,7 @@ export type Database = {
           instagram_url?: string | null
           name?: string
           org_id?: string
+          slug?: string | null
           state?: string | null
           vibe_tags?: string[] | null
         }

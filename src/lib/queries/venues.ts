@@ -1,14 +1,11 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createPublicClient } from '@/lib/supabase/server'
 
-/**
- * Returns all active venues for the public Shore Pulse venue directory.
- */
 export async function getPublicVenues() {
-  const supabase = await createClient()
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('venues')
-    .select('id, name, address, city, state, capacity, vibe_tags, cover_image_url, google_maps_embed, instagram_url')
+    .select('id, slug, name, address, city, state, capacity, vibe_tags, cover_image_url, google_maps_embed, instagram_url')
     .eq('active', true)
     .order('name', { ascending: true })
 
@@ -20,30 +17,24 @@ export async function getPublicVenues() {
   return data
 }
 
-/**
- * Returns a single active venue by id for the public venue page.
- */
-export async function getPublicVenueById(id: string) {
-  const supabase = await createClient()
+export async function getPublicVenueBySlug(slug: string) {
+  const supabase = createPublicClient()
 
   const { data, error } = await supabase
     .from('venues')
-    .select('id, name, address, city, state, capacity, vibe_tags, cover_image_url, google_maps_embed, instagram_url')
-    .eq('id', id)
+    .select('id, slug, name, address, city, state, capacity, vibe_tags, cover_image_url, google_maps_embed, instagram_url')
+    .eq('slug', slug)
     .eq('active', true)
-    .single()
+    .maybeSingle()
 
   if (error) {
-    console.error('getPublicVenueById error:', error)
+    console.error('getPublicVenueBySlug error:', error)
     return null
   }
 
   return data
 }
 
-/**
- * Returns all venues for the ops dashboard including inactive.
- */
 export async function getDashboardVenues() {
   const supabase = await createClient()
 

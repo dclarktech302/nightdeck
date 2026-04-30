@@ -4,6 +4,7 @@ import { ParticleField } from '@/components/canvas/ParticleField'
 import { RSVPForm } from '@/components/ui/RSVPForm'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>
@@ -41,7 +42,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
         {/* -- FLYER -- */}
         {event.cover_image_url && (
           <div
-            className="relative w-full aspect-[16/9] rounded-2xl overflow-hidden mb-10"
+            className="relative w-full aspect-video rounded-2xl overflow-hidden mb-10"
             style={{ border: '1px solid rgba(255,255,255,0.06)' }}
           >
             <Image
@@ -157,7 +158,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                         }}
                       >
                         {/* Artist photo */}
-                        <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-[#111]">
+                        <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-[#111]">
                           {slot.artists?.photo_url ? (
                             <Image
                               src={slot.artists.photo_url}
@@ -175,9 +176,18 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
                         {/* Artist info */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-white truncate">
-                            {slot.artists?.name}
-                          </p>
+                          {slot.artists?.slug ? (
+                              <Link
+                                href={`/artists/${slot.artists.slug}`}
+                                className="text-sm font-medium text-white truncate hover:text-[#c9a84c] transition-colors duration-200"
+                              >
+                                {slot.artists?.name}
+                              </Link>
+                            ) : (
+                              <p className="text-sm font-medium text-white truncate">
+                                {slot.artists?.name}
+                              </p>
+                            )}
                           {slot.artists?.genre_tags && slot.artists.genre_tags.length > 0 && (
                             <p className="text-xs text-white/30 truncate">
                               {slot.artists.genre_tags.join(' · ')}
@@ -188,7 +198,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                         {/* Headliner badge */}
                         {slot.set_order === maxSetOrder && (
                           <span
-                            className="text-[10px] font-semibold tracking-widest uppercase px-2 py-0.5 rounded flex-shrink-0"
+                            className="text-[10px] font-semibold tracking-widest uppercase px-2 py-0.5 rounded shrink-0"
                             style={{
                               background: 'oklch(0.78 0.15 85 / 0.1)',
                               border: '1px solid oklch(0.78 0.15 85 / 0.3)',

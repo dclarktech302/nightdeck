@@ -94,6 +94,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
         artists (
           id,
           name,
+          slug,
           photo_url,
           genre_tags,
           instagram_url,
@@ -166,6 +167,7 @@ export async function getDashboardEventById(id: string) {
         artists (
           id,
           name,
+          slug,
           photo_url,
           genre_tags,
           contact_email,

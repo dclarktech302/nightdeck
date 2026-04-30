@@ -42,7 +42,7 @@ export type EventWithVenue = Event & {
 // An artist entry in a lineup — the join table row plus artist details.
 // Used on: event detail page lineup section, ops dashboard lineup editor.
 export type LineupArtist = EventArtist & {
-  artists: Pick<Artist, 'id' | 'name' | 'photo_url' | 'genre_tags' | 'instagram_url' | 'spotify_url'>
+  artists: Pick<Artist, 'id' | 'name' | 'slug' | 'photo_url' | 'genre_tags' | 'instagram_url' | 'spotify_url'>
 }
 
 // A fully loaded event — venue + full lineup.

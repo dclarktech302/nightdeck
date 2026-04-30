@@ -16,7 +16,7 @@ export function DashboardSidebar() {
 
   return (
     <aside
-      className="w-56 flex-shrink-0 flex flex-col border-r min-h-screen"
+      className="w-56 shrink-0 flex flex-col border-r min-h-screen"
       style={{
         background: '#0a0a0a',
         borderColor: 'rgba(255,255,255,0.06)',
@@ -24,7 +24,7 @@ export function DashboardSidebar() {
     >
       {/* Logo */}
       <div
-        className="h-16 flex items-center px-5 border-b flex-shrink-0"
+        className="h-16 flex items-center px-5 border-b shrink-0"
         style={{ borderColor: 'rgba(255,255,255,0.06)' }}
       >
         <div className="flex items-center gap-2">

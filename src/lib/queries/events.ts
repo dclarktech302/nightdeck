@@ -87,6 +87,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
         address,
         city,
         state,
+        slug,
         google_maps_embed
       ),
       event_artists (
@@ -94,6 +95,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
         artists (
           id,
           name,
+          slug,
           photo_url,
           genre_tags,
           instagram_url,
@@ -166,6 +168,7 @@ export async function getDashboardEventById(id: string) {
         artists (
           id,
           name,
+          slug,
           photo_url,
           genre_tags,
           contact_email,

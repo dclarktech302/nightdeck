@@ -3,6 +3,8 @@ import { getDashboardVenues } from '@/lib/queries/venues'
 import { notFound } from 'next/navigation'
 import { updateVenue } from '../actions'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { SavedBanner } from '@/components/dashboard/SavedBanner'
 
 interface VenueDetailPageProps {
   params: Promise<{ id: string }>

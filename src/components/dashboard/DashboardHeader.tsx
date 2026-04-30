@@ -20,7 +20,7 @@ export function DashboardHeader({ session }: DashboardHeaderProps) {
 
   return (
     <header
-      className="h-16 flex items-center justify-between px-6 flex-shrink-0 border-b"
+      className="h-16 flex items-center justify-between px-6 shrink-0 border-b"
       style={{
         background: '#0a0a0a',
         borderColor: 'rgba(255,255,255,0.06)',

@@ -124,4 +124,5 @@ export async function unvetArtist(artistId: string): Promise<void> {
 
   revalidatePath('/dashboard/artists')
   revalidatePath('/artists')
+  redirect(`/dashboard/artists/${artistId}?saved=true`)
 }

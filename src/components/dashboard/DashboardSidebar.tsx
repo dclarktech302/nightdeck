@@ -63,21 +63,26 @@ export function DashboardSidebar() {
         })}
       </nav>
 
-      {/* Shore Pulse link */}
+      {/* Shore Pulse preview link */}
       <div
         className="p-3 border-t"
         style={{ borderColor: 'rgba(255,255,255,0.06)' }}
       >
-        <Link
+        <a
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors"
-          style={{ color: 'rgba(255,255,255,0.25)' }}
+          className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-all duration-200"
+          style={{
+            background: 'oklch(0.78 0.15 85 / 0.06)',
+            border: '1px solid oklch(0.78 0.15 85 / 0.15)',
+            color: '#c9a84c',
+          }}
         >
           <span className="text-base leading-none">◇</span>
-          <span>Shore Pulse ↗</span>
-        </Link>
+          <span className="flex-1">Shore Pulse</span>
+          <span className="text-xs opacity-50">↗</span>
+        </a>
       </div>
     </aside>
   )

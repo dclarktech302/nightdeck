@@ -50,6 +50,15 @@ export function SiteNav() {
             Artists
           </Link>
 
+          {!authed && (
+            <a
+              href="/login"
+              className="text-xs text-white/20 hover:text-white/40 transition-colors"
+            >
+              Admin
+            </a>
+          )}
+
           {/* Dashboard link — only shown when logged in */}
           {authed && (
             <Link

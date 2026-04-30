@@ -13,7 +13,7 @@ export async function login(formData: FormData) {
     options: {
       // After clicking the magic link, Supabase redirects here.
       // The callback route (Part 3) exchanges the token for a session.
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+      emailRedirectTo: `${process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },
   })
 

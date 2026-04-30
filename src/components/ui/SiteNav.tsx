@@ -2,14 +2,23 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 export function SiteNav() {
-  const [scrolled, setScrolled] = useState(false)
+  const [scrolled, setScrolled]   = useState(false)
+  const [authed, setAuthed]       = useState(false)
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20)
     window.addEventListener('scroll', handler, { passive: true })
     return () => window.removeEventListener('scroll', handler)
+  }, [])
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthed(!!data.session)
+    })
   }, [])
 
   return (
@@ -25,31 +34,36 @@ export function SiteNav() {
 
         {/* Wordmark */}
         <Link href="/" className="flex items-center gap-2 group">
-          <span className="text-lg font-bold tracking-tight text-white">
-            Shore
-          </span>
-          <span
-            className="text-lg font-bold tracking-tight transition-all duration-200"
-            style={{ color: '#c9a84c' }}
-          >
-            Pulse
-          </span>
+          <span className="text-lg font-bold tracking-tight text-white">Shore</span>
+          <span className="text-lg font-bold tracking-tight transition-all duration-200"
+            style={{ color: '#c9a84c' }}>Pulse</span>
         </Link>
 
         {/* Nav links */}
-        <div className="flex items-center gap-8">
-          <Link
-            href="/events"
-            className="text-sm text-white/50 hover:text-white transition-colors duration-200"
-          >
+        <div className="flex items-center gap-6">
+          <Link href="/events"
+            className="text-sm text-white/50 hover:text-white transition-colors duration-200">
             Events
           </Link>
-          <Link
-            href="/artists"
-            className="text-sm text-white/50 hover:text-white transition-colors duration-200"
-          >
+          <Link href="/artists"
+            className="text-sm text-white/50 hover:text-white transition-colors duration-200">
             Artists
           </Link>
+
+          {/* Dashboard link — only shown when logged in */}
+          {authed && (
+            <Link
+              href="/dashboard"
+              className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all duration-200"
+              style={{
+                background: 'oklch(0.78 0.15 85 / 0.1)',
+                border: '1px solid oklch(0.78 0.15 85 / 0.3)',
+                color: '#c9a84c',
+              }}
+            >
+              Ops ↗
+            </Link>
+          )}
         </div>
 
       </div>

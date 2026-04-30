@@ -21,9 +21,6 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Suspense fallback={null}>
-        <SavedBanner />
-      </Suspense>
 
       <div className="flex items-center justify-between">
         <div>

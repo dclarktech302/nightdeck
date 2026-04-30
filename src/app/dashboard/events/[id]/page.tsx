@@ -96,9 +96,6 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
-      <Suspense fallback={null}>
-        <SavedBanner />
-      </Suspense>
 
       {/* Page header */}
       <div className="flex items-start justify-between">

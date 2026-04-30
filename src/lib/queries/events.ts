@@ -87,6 +87,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
         address,
         city,
         state,
+        slug,
         google_maps_embed
       ),
       event_artists (

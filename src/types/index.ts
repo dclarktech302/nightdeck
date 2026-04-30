@@ -36,7 +36,7 @@ export type OrgPlan             = Enums<'org_plan'>
 // An event with its venue attached.
 // Used on: Shore Pulse event cards, event detail page.
 export type EventWithVenue = Event & {
-  venues: Pick<Venue, 'name' | 'address' | 'city' | 'state' | 'google_maps_embed'> | null
+  venues: Pick<Venue, 'name' | 'address' | 'city' | 'state' | 'slug' | 'google_maps_embed'> | null
 }
 
 // An artist entry in a lineup — the join table row plus artist details.

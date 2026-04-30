@@ -29,6 +29,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     ? new Date(event.doors_open).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
     : null
   const venue = event.venues
+  const venueSlug = venue && 'slug' in venue ? (venue as any).slug : null
   const lineup = event.event_artists ?? []
   const maxSetOrder = lineup.length > 0 ? Math.max(...lineup.map(l => l.set_order ?? 0)) : -1
 
@@ -116,7 +117,16 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                   Venue
                 </h2>
                 <div className="text-sm text-white/60 space-y-1">
-                  <p className="text-white font-medium">{venue.name}</p>
+                  {venueSlug ? (
+                    <Link
+                      href={`/venues/${venueSlug}`}
+                      className="text-white font-medium hover:text-[#c9a84c] transition-colors duration-200"
+                    >
+                      {venue.name}
+                    </Link>
+                  ) : (
+                    <p className="text-white font-medium">{venue.name}</p>
+                  )}
                   {venue.address && <p>{venue.address}</p>}
                   {venue.city && <p>{venue.city}</p>}
                 </div>

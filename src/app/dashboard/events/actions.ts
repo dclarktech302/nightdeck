@@ -60,7 +60,6 @@ export async function createEvent(formData: FormData): Promise<void> {
 export async function updateEvent(eventId: string, formData: FormData): Promise<void> {
   await requireSession()
   const supabase = await createClient()
-
   const status = formData.get('status') as Enums<'event_status'>
 
   const { error } = await supabase
@@ -86,6 +85,7 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
   revalidatePath(`/dashboard/events/${eventId}`)
   revalidatePath('/dashboard/events')
   revalidatePath('/')
+  redirect(`/dashboard/events/${eventId}?saved=true`)
 }
 
 // ─── ADD ARTIST TO LINEUP ─────────────────────────────────────

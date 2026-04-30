@@ -5,6 +5,8 @@ import { getDashboardVenues } from '@/lib/queries/venues'
 import { getRSVPsByEvent } from '@/lib/queries/rsvps'
 import { getEventPnL, getExpensesByEvent, getRevenueByEvent } from '@/lib/queries/financials'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
+import { SavedBanner } from '@/components/dashboard/SavedBanner'
 import {
   updateEvent,
   addArtistToLineup,
@@ -94,6 +96,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+      <Suspense fallback={null}>
+        <SavedBanner />
+      </Suspense>
 
       {/* Page header */}
       <div className="flex items-start justify-between">

@@ -49,6 +49,10 @@ export function SiteNav() {
             className="text-sm text-white/50 hover:text-white transition-colors duration-200">
             Artists
           </Link>
+          <Link href="/venues"
+            className="text-sm text-white/50 hover:text-white transition-colors duration-200">
+            Venues
+          </Link>
 
           {!authed && (
             <a

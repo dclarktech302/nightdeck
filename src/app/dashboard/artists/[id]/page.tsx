@@ -3,6 +3,8 @@ import { getDashboardArtistById } from '@/lib/queries/artists'
 import { notFound } from 'next/navigation'
 import { updateArtist } from '../actions'
 import Link from 'next/link'
+import { SavedBanner } from '@/components/dashboard/SavedBanner'
+import { Suspense } from 'react'
 
 interface ArtistDetailPageProps {
   params: Promise<{ id: string }>
@@ -19,6 +21,9 @@ export default async function ArtistDetailPage({ params }: ArtistDetailPageProps
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <Suspense fallback={null}>
+        <SavedBanner />
+      </Suspense>
 
       <div className="flex items-center justify-between">
         <div>

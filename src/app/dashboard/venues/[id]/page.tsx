@@ -3,6 +3,8 @@ import { getDashboardVenues } from '@/lib/queries/venues'
 import { notFound } from 'next/navigation'
 import { updateVenue } from '../actions'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import { SavedBanner } from '@/components/dashboard/SavedBanner'
 
 interface VenueDetailPageProps {
   params: Promise<{ id: string }>
@@ -20,6 +22,9 @@ export default async function VenueDetailPage({ params }: VenueDetailPageProps) 
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <Suspense fallback={null}>
+        <SavedBanner />
+      </Suspense>
 
       <div className="flex items-center justify-between">
         <div>

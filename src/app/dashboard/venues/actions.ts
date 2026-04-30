@@ -94,4 +94,5 @@ export async function updateVenue(venueId: string, formData: FormData): Promise<
   revalidatePath(`/dashboard/venues/${venueId}`)
   revalidatePath('/dashboard/venues')
   revalidatePath('/venues')
+  redirect(`/dashboard/venues/${venueId}?saved=true`)
 }

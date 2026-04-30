@@ -3,6 +3,8 @@ import { SiteNav } from '@/components/ui/SiteNav'
 import { EventCard } from '@/components/ui/EventCard'
 import { ParticleField } from '@/components/canvas/ParticleField'
 
+export const revalidate = 300
+
 export default async function EventsPage() {
   const events = await getUpcomingEvents()
 

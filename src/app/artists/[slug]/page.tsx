@@ -10,6 +10,33 @@ interface ArtistPageProps {
   params: Promise<{ slug: string }>
 }
 
+export async function generateMetadata({ params }: ArtistPageProps) {
+  const { slug } = await params
+  const artist = await getPublicArtistBySlug(slug)
+
+  if (!artist) return { title: 'Artist not found — Shore Pulse' }
+
+  return {
+    title: `${artist.name} — Shore Pulse`,
+    description: artist.bio
+      ?? `${artist.name}${artist.genre_tags?.length ? ` · ${artist.genre_tags.join(', ')}` : ''}. On Shore Pulse.`,
+    openGraph: {
+      title: artist.name,
+      description: artist.bio ?? artist.name,
+      images: artist.photo_url
+        ? [{ url: artist.photo_url, width: 800, height: 800 }]
+        : [],
+      type: 'profile',
+    },
+    twitter: {
+      card: artist.photo_url ? 'summary_large_image' : 'summary',
+      title: artist.name,
+      description: artist.bio ?? artist.name,
+      images: artist.photo_url ? [artist.photo_url] : [],
+    },
+  }
+}
+
 export default async function ArtistPage({ params }: ArtistPageProps) {
   const { slug } = await params
   const artist = await getPublicArtistBySlug(slug)

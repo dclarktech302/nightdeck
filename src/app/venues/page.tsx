@@ -2,6 +2,9 @@ import { getPublicVenues } from '@/lib/queries/venues'
 import { SiteNav } from '@/components/ui/SiteNav'
 import { ParticleField } from '@/components/canvas/ParticleField'
 import Link from 'next/link'
+import Image from 'next/image'
+
+export const revalidate = 300
 
 export default async function VenuesPage() {
   const venues = await getPublicVenues()
@@ -40,11 +43,11 @@ export default async function VenuesPage() {
                   {/* Cover image */}
                   <div className="relative aspect-video bg-[#0a0a0a] overflow-hidden">
                     {venue.cover_image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={venue.cover_image_url}
                         alt={venue.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     ) : (
                       <div className="absolute inset-0 flex items-center justify-center">

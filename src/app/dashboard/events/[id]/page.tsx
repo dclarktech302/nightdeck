@@ -105,18 +105,35 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             })}
           </p>
         </div>
-        <a
-          href={event.slug ? `/events/${event.slug}` : '#'}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs transition-colors px-3 py-1.5 rounded-lg"
-          style={{
-            color: event.status === 'confirmed' ? '#c9a84c' : 'rgba(255,255,255,0.2)',
-            border: '1px solid rgba(255,255,255,0.08)',
-          }}
-        >
-          View public page ↗
-        </a>
+        {event.status === 'confirmed' && event.slug ? (
+  
+          <a
+            href={`/events/${event.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs transition-colors px-3 py-1.5 rounded-lg"
+            style={{
+              color: '#c9a84c',
+              border: '1px solid oklch(0.78 0.15 85 / 0.3)',
+            }}
+          >
+            View public page ↗
+          </a>
+        ) : (
+          <span
+            className="text-xs px-3 py-1.5 rounded-lg"
+            style={{
+              color: 'rgba(255,255,255,0.2)',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}
+          >
+            {event.status === 'draft'
+              ? 'Draft — not public'
+              : event.status === 'confirmed'
+              ? 'No slug set'
+              : `${event.status} — not public`}
+          </span>
+        )}
       </div>
 
       {/* -- EVENT INFO -- */}

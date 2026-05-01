@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { getEventMedia } from '@/lib/queries/events'
 import { ShareButton } from '@/components/ui/ShareButton'
+import { GalleryLightbox } from '@/components/ui/GalleryLightbox'
 
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>
@@ -347,43 +348,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                 style={{ color: '#c9a84c' }}>
                 Gallery
               </span>
-              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+              <div className="flex-1 h-px"
+                style={{ background: 'rgba(255,255,255,0.06)' }} />
             </div>
-
-            {/* Masonry 2/3/4 columns */}
-            <div style={{
-              columns: '2',
-              gap: '8px',
-            }}
-            className="md:columns-3 lg:columns-4"
-            >
-              {galleryMedia.map(item => (
-                <div
-                  key={item.id}
-                  className="break-inside-avoid mb-2 rounded-xl overflow-hidden"
-                  style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-                >
-                  {item.media_type === 'image' ? (
-                    <Image
-                      src={item.url}
-                      alt=""
-                      width={600}
-                      height={400}
-                      className="w-full h-auto object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <video
-                      src={item.url}
-                      className="w-full"
-                      controls
-                      preload="metadata"
-                      playsInline
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
+            <GalleryLightbox items={galleryMedia} />
           </div>
         )}
 

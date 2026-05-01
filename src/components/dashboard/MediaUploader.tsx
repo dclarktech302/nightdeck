@@ -5,6 +5,7 @@ import { saveMediaRecord } from '@/app/dashboard/events/actions'
 
 interface MediaUploaderProps {
   eventId: string
+  orgId: string
   context: 'promotional' | 'gallery'
   currentCount: number
   maxImages: number
@@ -115,7 +116,33 @@ export function MediaUploader({
       formData.set('media_type', mediaType)
       formData.set('context',    context)
       formData.set('size_bytes', String(uploadSize))
-      await saveMediaRecord(formData)
+      // Save record and get the media ID
+      const saveRes = await fetch('/api/media', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventId,
+          url:        publicUrl,
+          mediaType,
+          context,
+          sizeBytes:  uploadSize,
+          orgId,
+        }),
+      })
+
+      if (!saveRes.ok) throw new Error('Failed to save media record')
+      const { id: mediaId } = await saveRes.json()
+
+      updateFile(id, { progress: 92 })
+
+      // Generate captions for images asynchronously
+      if (isImage && mediaId) {
+        fetch('/api/caption', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mediaId, imageUrl: publicUrl }),
+        }).catch(console.error)
+      }
 
       updateFile(id, { status: 'done', progress: 100 })
 

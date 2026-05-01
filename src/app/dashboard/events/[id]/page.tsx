@@ -72,7 +72,7 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
 
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { id } = await params
-  await requireSession()
+  const session = await requireSession()
 
   const [event, artists, venues, rsvps, pnl, expenses, revenue, media] = await Promise.all([
     getDashboardEventById(id),
@@ -511,6 +511,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             />
             <MediaUploader
               eventId={id}
+              orgId={session.orgId}
               context="promotional"
               currentCount={media.filter(m => m.context === 'promotional').length}
               maxImages={5}
@@ -533,6 +534,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             />
             <MediaUploader
               eventId={id}
+              orgId={session.orgId}
               context="gallery"
               currentCount={media.filter(m => m.context === 'gallery').length}
               maxImages={20}

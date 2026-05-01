@@ -4,6 +4,8 @@ import { ParticleField } from '@/components/canvas/ParticleField'
 import Image from 'next/image'
 import Link from 'next/link'
 
+export const revalidate = 300
+
 export default async function ArtistsPage() {
   const artists = await getPublicArtists()
 

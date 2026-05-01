@@ -4,9 +4,36 @@ import { SiteNav } from '@/components/ui/SiteNav'
 import { ParticleField } from '@/components/canvas/ParticleField'
 import { EventCard } from '@/components/ui/EventCard'
 import { notFound } from 'next/navigation'
+import Image from 'next/image'
 
 interface VenuePageProps {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: VenuePageProps) {
+  const { slug } = await params
+  const venue = await getPublicVenueBySlug(slug)
+
+  if (!venue) return { title: 'Venue not found — Shore Pulse' }
+
+  return {
+    title: `${venue.name} — Shore Pulse`,
+    description: `${venue.name}${venue.city ? ` in ${venue.city}` : ''}${venue.vibe_tags?.length ? ` · ${venue.vibe_tags.join(', ')}` : ''}. Events on Shore Pulse.`,
+    openGraph: {
+      title: venue.name,
+      description: `${venue.name}${venue.city ? ` · ${venue.city}` : ''}`,
+      images: venue.cover_image_url
+        ? [{ url: venue.cover_image_url, width: 1200, height: 630 }]
+        : [],
+      type: 'website',
+    },
+    twitter: {
+      card: venue.cover_image_url ? 'summary_large_image' : 'summary',
+      title: venue.name,
+      description: `${venue.name}${venue.city ? ` · ${venue.city}` : ''}`,
+      images: venue.cover_image_url ? [venue.cover_image_url] : [],
+    },
+  }
 }
 
 export default async function VenuePage({ params }: VenuePageProps) {
@@ -36,11 +63,11 @@ export default async function VenuePage({ params }: VenuePageProps) {
               className="relative w-full aspect-21/9 rounded-2xl overflow-hidden mb-8"
               style={{ border: '1px solid rgba(255,255,255,0.06)' }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={venue.cover_image_url}
                 alt={venue.name}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
               />
             </div>
           )}

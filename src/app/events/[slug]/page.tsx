@@ -18,6 +18,37 @@ function formatFullDate(dateString: string) {
   }
 }
 
+export async function generateMetadata({ params }: EventDetailPageProps) {
+  const { slug } = await params
+  const event = await getEventBySlug(slug)
+
+  if (!event) return { title: 'Event not found — Shore Pulse' }
+
+  const date = new Date(event.event_date).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric',
+  })
+
+  return {
+    title: `${event.name} — Shore Pulse`,
+    description: event.description
+      ?? `${event.name} · ${date}${event.venues ? ` · ${event.venues.name}` : ''}. RSVP on Shore Pulse.`,
+    openGraph: {
+      title: event.name,
+      description: event.description ?? `${event.name} · ${date}`,
+      images: event.cover_image_url
+        ? [{ url: event.cover_image_url, width: 1200, height: 630 }]
+        : [],
+      type: 'website',
+    },
+    twitter: {
+      card: event.cover_image_url ? 'summary_large_image' : 'summary',
+      title: event.name,
+      description: event.description ?? `${event.name} · ${date}`,
+      images: event.cover_image_url ? [event.cover_image_url] : [],
+    },
+  }
+}
+
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { slug } = await params
   const event = await getEventBySlug(slug)

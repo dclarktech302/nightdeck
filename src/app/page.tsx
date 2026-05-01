@@ -3,6 +3,8 @@ import { ParticleField } from '@/components/canvas/ParticleField'
 import { SiteNav } from '@/components/ui/SiteNav'
 import { EventCard } from '@/components/ui/EventCard'
 
+export const revalidate = 300
+
 export default async function HomePage() {
   // Both run in parallel — not sequential
   const [featured, upcoming] = await Promise.all([

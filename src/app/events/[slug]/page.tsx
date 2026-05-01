@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { getEventMedia } from '@/lib/queries/events'
+import { ShareButton } from '@/components/ui/ShareButton'
 
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>
@@ -304,6 +305,17 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             {/* RSVP form — only for upcoming events */}
             {!isCompleted && (
               <RSVPForm eventId={event.id} eventName={event.name} />
+            )}
+
+            {!isCompleted && (
+              <>
+                <RSVPForm eventId={event.id} eventName={event.name} />
+                <ShareButton
+                  title={event.name}
+                  text={`${full} · ${venue?.name ?? 'Shore Pulse'}`}
+                  url={`${process.env.NEXT_PUBLIC_APP_URL}/events/${event.slug}`}
+                />
+              </>
             )}
 
             {/* Completed state */}

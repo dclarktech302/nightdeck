@@ -38,7 +38,7 @@ export function EventCard({ event }: EventCardProps) {
         />
 
         {/* Event flyer */}
-        <div className="relative aspect-[4/3] w-full bg-[#111] overflow-hidden">
+        <div className="relative aspect-4/3 w-full bg-[#111] overflow-hidden">
           {event.cover_image_url ? (
             <Image
               src={event.cover_image_url}

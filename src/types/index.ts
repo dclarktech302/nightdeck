@@ -14,6 +14,7 @@ export type RSVP         = Tables<'rsvps'>
 export type Expense      = Tables<'expenses'>
 export type Revenue      = Tables<'revenue'>
 export type UserProfile  = Tables<'user_profiles'>
+export type EventMedia   = Tables<'event_media'>
 
 // ─── Enum types ───────────────────────────────────────────────
 // Pull enum value unions out so you can use them as prop types.

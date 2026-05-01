@@ -6,6 +6,79 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import type { Enums } from '@/types/database.types'
 
+// ─── SAVE MEDIA RECORD ────────────────────────────────────────
+// Called after successful S3 upload to record the file in the DB
+export async function saveMediaRecord(formData: FormData): Promise<void> {
+  const session = await requireSession()
+  const supabase = await createClient()
+
+  const eventId     = formData.get('event_id') as string
+  const url         = formData.get('url') as string
+  const mediaType   = formData.get('media_type') as string
+  const context     = formData.get('context') as string
+  const sizeBytes   = formData.get('size_bytes') as string
+
+  const { error } = await supabase
+    .from('event_media')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    .insert({
+      event_id:   eventId,
+      org_id:     session.orgId,
+      url,
+      media_type: mediaType,
+      context,
+      size_bytes: sizeBytes ? parseInt(sizeBytes) : null,
+      is_public:  false, // always starts private
+    } as any)
+
+  if (error) {
+    console.error('saveMediaRecord error:', error)
+    return
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+}
+
+// ─── TOGGLE MEDIA VISIBILITY ──────────────────────────────────
+export async function toggleMediaVisibility(
+  mediaId: string,
+  eventId: string,
+  isPublic: boolean
+): Promise<void> {
+  await requireSession()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('event_media')
+    .update({ is_public: isPublic })
+    .eq('id', mediaId)
+
+  if (error) {
+    console.error('toggleMediaVisibility error:', error)
+    return
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+}
+
+// ─── DELETE MEDIA ─────────────────────────────────────────────
+export async function deleteMedia(mediaId: string, eventId: string): Promise<void> {
+  await requireSession()
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('event_media')
+    .delete()
+    .eq('id', mediaId)
+
+  if (error) {
+    console.error('deleteMedia error:', error)
+    return
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+}
+
 // ─── CREATE EVENT ─────────────────────────────────────────────
 export async function createEvent(formData: FormData): Promise<void> {
   const session = await requireSession()

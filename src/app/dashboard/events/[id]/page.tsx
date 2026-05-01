@@ -5,8 +5,9 @@ import { getDashboardVenues } from '@/lib/queries/venues'
 import { getRSVPsByEvent } from '@/lib/queries/rsvps'
 import { getEventPnL, getExpensesByEvent, getRevenueByEvent } from '@/lib/queries/financials'
 import { notFound } from 'next/navigation'
-import { Suspense } from 'react'
-import { SavedBanner } from '@/components/dashboard/SavedBanner'
+import { getDashboardEventMedia } from '@/lib/queries/events'
+import { MediaUploader } from '@/components/dashboard/MediaUploader'
+import { MediaGrid } from '@/components/dashboard/MediaGrid'
 import {
   updateEvent,
   addArtistToLineup,
@@ -14,6 +15,9 @@ import {
   markArtistPaid,
   addExpense,
   addRevenue,
+  saveMediaRecord,
+  toggleMediaVisibility,
+  deleteMedia,
 } from '../actions'
 
 interface EventDetailPageProps {
@@ -70,7 +74,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const { id } = await params
   await requireSession()
 
-  const [event, artists, venues, rsvps, pnl, expenses, revenue] = await Promise.all([
+  const [event, artists, venues, rsvps, pnl, expenses, revenue, media] = await Promise.all([
     getDashboardEventById(id),
     getDashboardArtists(),
     getDashboardVenues(),
@@ -78,6 +82,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     getEventPnL(id),
     getExpensesByEvent(id),
     getRevenueByEvent(id),
+    getDashboardEventMedia(id),
   ])
 
   if (!event) notFound()
@@ -487,6 +492,55 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             </form>
           </Card>
 
+        </div>
+      </div>
+
+      {/* -- MEDIA -- */}
+      <div>
+        <SectionTitle>Media</SectionTitle>
+
+        {/* Promotional */}
+        <div className="space-y-3 mb-6">
+          <p className="text-xs text-white/30 uppercase tracking-wider">
+            Promotional — pre-event
+          </p>
+          <Card>
+            <MediaGrid
+              items={media.filter(m => m.context === 'promotional')}
+              eventId={id}
+            />
+            <MediaUploader
+              eventId={id}
+              context="promotional"
+              currentCount={media.filter(m => m.context === 'promotional').length}
+              maxImages={5}
+              maxVideos={2}
+              imageCount={media.filter(m => m.context === 'promotional' && m.media_type === 'image').length}
+              videoCount={media.filter(m => m.context === 'promotional' && m.media_type === 'video').length}
+            />
+          </Card>
+        </div>
+
+        {/* Gallery */}
+        <div className="space-y-3">
+          <p className="text-xs text-white/30 uppercase tracking-wider">
+            Gallery — post-event
+          </p>
+          <Card>
+            <MediaGrid
+              items={media.filter(m => m.context === 'gallery')}
+              eventId={id}
+            />
+            <MediaUploader
+              eventId={id}
+              context="gallery"
+              currentCount={media.filter(m => m.context === 'gallery').length}
+              maxImages={20}
+              maxVideos={3}
+              imageCount={media.filter(m => m.context === 'gallery' && m.media_type === 'image').length}
+              videoCount={media.filter(m => m.context === 'gallery' && m.media_type === 'video').length}
+            />
+          </Card>
         </div>
       </div>
 

@@ -15,6 +15,14 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: '**.supabase.co', // Supabase storage if used later
       },
+      {
+        protocol: 'https',
+        hostname: 'nightdeck-media.s3.us-east-1.amazonaws.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'nightdeck-media.s3.amazonaws.com',
+      },
     ],
   },
 }

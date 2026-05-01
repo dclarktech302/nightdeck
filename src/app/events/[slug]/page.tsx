@@ -5,6 +5,7 @@ import { RSVPForm } from '@/components/ui/RSVPForm'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
+import { getEventMedia } from '@/lib/queries/events'
 
 interface EventDetailPageProps {
   params: Promise<{ slug: string }>
@@ -52,9 +53,14 @@ export async function generateMetadata({ params }: EventDetailPageProps) {
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { slug } = await params
   const event = await getEventBySlug(slug)
-
   if (!event) notFound()
 
+  const media = await getEventMedia(event.id)
+
+  const isCompleted   = event.status === 'completed'
+  const promoVideos   = media.filter(m => m.context === 'promotional' && m.media_type === 'video')
+  const promoImages   = media.filter(m => m.context === 'promotional' && m.media_type === 'image')
+  const galleryMedia  = media.filter(m => m.context === 'gallery')
   const { full, time } = formatFullDate(event.event_date)
   const doorsTime = event.doors_open
     ? new Date(event.doors_open).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
@@ -255,16 +261,119 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               </div>
             )}
 
+            {/* Promotional images — pre-event strip */}
+            {!isCompleted && promoImages.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 mt-4">
+                {promoImages.map((img, index) => (
+                  <div key={img.id} className="shrink-0 w-24 h-24 rounded-lg overflow-hidden"
+                    style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <Image
+                      src={img.url}
+                      alt=""
+                      width={96}
+                      height={96}
+                      className="w-full h-auto object-cover"
+                      priority={index === 0}
+                      unoptimized
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+
           </div>
           {/* END LEFT COLUMN */}
 
-          {/* RIGHT COLUMN: RSVP FORM */}
-          <div className="md:sticky md:top-24 h-fit">
-            <RSVPForm eventId={event.id} eventName={event.name} />
+          {/* RIGHT COLUMN: RSVP FORM or completed state */}
+          <div className="md:sticky md:top-24 h-fit space-y-4">
+
+            {/* Promotional video — pre-event */}
+            {!isCompleted && promoVideos.length > 0 && (
+              <div className="rounded-xl overflow-hidden"
+                style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
+                <video
+                  src={promoVideos[0].url}
+                  className="w-full"
+                  controls
+                  preload="metadata"
+                  playsInline
+                />
+              </div>
+            )}
+
+            {/* RSVP form — only for upcoming events */}
+            {!isCompleted && (
+              <RSVPForm eventId={event.id} eventName={event.name} />
+            )}
+
+            {/* Completed state */}
+            {isCompleted && (
+              <div
+                className="rounded-xl p-5 text-center space-y-2"
+                style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)' }}
+              >
+                <p className="text-xs tracking-[0.2em] uppercase" style={{ color: '#c9a84c' }}>
+                  This event has passed
+                </p>
+                <p className="text-xs text-white/30">
+                  {new Date(event.event_date).toLocaleDateString('en-US', {
+                    month: 'long', day: 'numeric', year: 'numeric'
+                  })}
+                </p>
+              </div>
+            )}
           </div>
 
         </div>
         {/* END TWO COLUMN LAYOUT */}
+
+        {/* -- GALLERY -- post-event only */}
+        {isCompleted && galleryMedia.length > 0 && (
+          <div className="mt-16">
+            <div className="flex items-center gap-4 mb-6">
+              <span className="text-xs tracking-[0.3em] uppercase font-semibold"
+                style={{ color: '#c9a84c' }}>
+                Gallery
+              </span>
+              <div className="flex-1 h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
+            </div>
+
+            {/* Masonry 2/3/4 columns */}
+            <div style={{
+              columns: '2',
+              gap: '8px',
+            }}
+            className="md:columns-3 lg:columns-4"
+            >
+              {galleryMedia.map(item => (
+                <div
+                  key={item.id}
+                  className="break-inside-avoid mb-2 rounded-xl overflow-hidden"
+                  style={{ border: '1px solid rgba(255,255,255,0.06)' }}
+                >
+                  {item.media_type === 'image' ? (
+                    <Image
+                      src={item.url}
+                      alt=""
+                      width={600}
+                      height={400}
+                      className="w-full h-auto object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <video
+                      src={item.url}
+                      className="w-full"
+                      controls
+                      preload="metadata"
+                      playsInline
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </>

@@ -31,6 +31,7 @@ export type Database = {
           slug: string | null
           spotify_url: string | null
           tech_rider: string | null
+          updated_at: string | null
           vetted: boolean
         }
         Insert: {
@@ -49,6 +50,7 @@ export type Database = {
           slug?: string | null
           spotify_url?: string | null
           tech_rider?: string | null
+          updated_at?: string | null
           vetted?: boolean
         }
         Update: {
@@ -67,6 +69,7 @@ export type Database = {
           slug?: string | null
           spotify_url?: string | null
           tech_rider?: string | null
+          updated_at?: string | null
           vetted?: boolean
         }
         Relationships: [
@@ -230,6 +233,63 @@ export type Database = {
             referencedRelation: "venues"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      event_media: {
+        Row: {
+          id: string
+          event_id: string
+          org_id: string
+          url: string
+          media_type: string
+          context: string
+          display_order: number
+          size_bytes: number | null
+          duration_sec: number | null
+          is_public: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          event_id: string
+          org_id: string
+          url: string
+          media_type: string
+          context: string
+          display_order?: number
+          size_bytes?: number | null
+          duration_sec?: number | null
+          is_public?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          event_id?: string
+          org_id?: string
+          url?: string
+          media_type?: string
+          context?: string
+          display_order?: number
+          size_bytes?: number | null
+          duration_sec?: number | null
+          is_public?: boolean
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_media_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_media_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          }
         ]
       }
       expenses: {
@@ -430,6 +490,7 @@ export type Database = {
           org_id: string
           slug: string | null
           state: string | null
+          updated_at: string | null
           vibe_tags: string[] | null
         }
         Insert: {
@@ -446,6 +507,7 @@ export type Database = {
           org_id: string
           slug?: string | null
           state?: string | null
+          updated_at?: string | null
           vibe_tags?: string[] | null
         }
         Update: {
@@ -462,6 +524,7 @@ export type Database = {
           org_id?: string
           slug?: string | null
           state?: string | null
+          updated_at?: string | null
           vibe_tags?: string[] | null
         }
         Relationships: [

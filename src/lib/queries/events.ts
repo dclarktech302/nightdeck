@@ -5,6 +5,49 @@ import type { EventWithVenue, EventWithLineup } from '@/types'
 // These run without auth — RLS ensures only confirmed events return.
 
 /**
+ * Returns public media for a completed event (public gallery page)
+ */
+export async function getEventMedia(eventId: string) {
+  const supabase = createPublicClient()
+
+  const { data, error } = await supabase
+    .from('event_media')
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('is_public', true)
+    .order('display_order', { ascending: true })
+    .order('created_at', { ascending: true })
+
+  if (error) {
+    console.error('getEventMedia error:', error)
+    return []
+  }
+
+  return data
+}
+
+/**
+ * Returns ALL media for a dashboard event (including non-public)
+ */
+export async function getDashboardEventMedia(eventId: string) {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('event_media')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('context', { ascending: true })
+    .order('display_order', { ascending: true })
+
+  if (error) {
+    console.error('getDashboardEventMedia error:', error)
+    return []
+  }
+
+  return data
+}
+
+/**
  * Returns all upcoming confirmed events with their venue.
  * Used by the Shore Pulse homepage and /events page.
  */
@@ -104,7 +147,7 @@ export async function getEventBySlug(slug: string): Promise<EventWithLineup | nu
       )
     `)
     .eq('slug', slug)
-    .eq('status', 'confirmed')
+    .in('status', ['confirmed', 'completed'])
     .maybeSingle()
 
   if (error) {

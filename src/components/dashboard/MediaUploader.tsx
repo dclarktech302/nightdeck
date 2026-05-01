@@ -23,7 +23,7 @@ interface UploadFile {
 }
 
 export function MediaUploader({
-  eventId, context,
+  eventId, orgId, context,
   maxImages, maxVideos,
   imageCount, videoCount,
 }: MediaUploaderProps) {

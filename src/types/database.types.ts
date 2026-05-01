@@ -248,6 +248,8 @@ export type Database = {
           duration_sec: number | null
           is_public: boolean
           created_at: string
+          caption: string | null
+          alt_text: string | null
         }
         Insert: {
           id?: string
@@ -261,6 +263,8 @@ export type Database = {
           duration_sec?: number | null
           is_public?: boolean
           created_at?: string
+          caption?: string | null
+          alt_text?: string | null
         }
         Update: {
           id?: string
@@ -274,6 +278,8 @@ export type Database = {
           duration_sec?: number | null
           is_public?: boolean
           created_at?: string
+          caption?: string | null
+          alt_text?: string | null
         }
         Relationships: [
           {

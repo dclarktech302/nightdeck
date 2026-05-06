@@ -265,21 +265,8 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
             {/* Promotional images — pre-event strip */}
             {!isCompleted && promoImages.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 mt-4">
-                {promoImages.map((img, index) => (
-                  <div key={img.id} className="shrink-0 w-24 h-24 rounded-lg overflow-hidden"
-                    style={{ border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <Image
-                      src={img.url}
-                      alt=""
-                      width={96}
-                      height={96}
-                      className="w-full h-auto object-cover"
-                      priority={index === 0}
-                      unoptimized
-                    />
-                  </div>
-                ))}
+              <div className="mt-4">
+                <GalleryLightbox items={promoImages} />
               </div>
             )}
 

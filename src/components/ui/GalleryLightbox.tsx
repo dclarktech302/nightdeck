@@ -63,6 +63,7 @@ export function GalleryLightbox({ items }: GalleryLightboxProps) {
                 width={600}
                 height={400}
                 className="w-full h-auto object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                priority
                 unoptimized
               />
             ) : (

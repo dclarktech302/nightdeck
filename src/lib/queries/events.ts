@@ -66,12 +66,42 @@ export async function getUpcomingEvents(): Promise<EventWithVenue[]> {
         google_maps_embed
       )
     `)
-    .eq('status', 'confirmed')
+    .eq('status', 'confirmed') // Only confirmed (not completed)
     .gte('event_date', new Date().toISOString()) // only future events
     .order('event_date', { ascending: true })
 
   if (error) {
     console.error('getUpcomingEvents error:', error)
+    return []
+  }
+
+  return data as EventWithVenue[]
+}
+
+/**
+ * Returns all completed events with their venue.
+ * Used by the public /events page to show past events.
+ */
+export async function getPastEvents(): Promise<EventWithVenue[]> {
+  const supabase = createPublicClient()
+
+  const { data, error } = await supabase
+    .from('events')
+    .select(`
+      *,
+      venues (
+        name,
+        address,
+        city,
+        state,
+        google_maps_embed
+      )
+    `)
+    .eq('status', 'completed') // Only completed events
+    .order('event_date', { ascending: false }) // most recent first
+
+  if (error) {
+    console.error('getPastEvents error:', error)
     return []
   }
 

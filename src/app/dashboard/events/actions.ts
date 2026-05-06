@@ -279,3 +279,29 @@ export async function addRevenue(formData: FormData): Promise<void> {
 
   revalidatePath(`/dashboard/events/${eventId}`)
 }
+
+// ─── UPDATE MEDIA CAPTIONS ────────────────────────────────────
+export async function updateMediaCaptions(formData: FormData, eventId: string): Promise<void> {
+  await requireSession()
+  const supabase = await createClient()
+  
+  const mediaId = formData.get('mediaId') as string
+  const altText = formData.get('altText') as string
+  const caption = formData.get('caption') as string
+
+  const { error } = await supabase
+    .from('event_media')
+    .update({ 
+      alt_text: altText || null, 
+      caption: caption || null 
+    })
+    .eq('id', mediaId)
+    .eq('event_id', eventId)
+
+  if (error) {
+    console.error('updateMediaCaptions error:', error)
+    return
+  }
+
+  revalidatePath(`/dashboard/events/${eventId}`)
+}

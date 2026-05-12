@@ -6,8 +6,12 @@ export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
 
   // Supabase appends these to the redirect URL automatically.
-  const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/dashboard'
+  const code   = searchParams.get('code')
+  // Guard against open-redirect: only allow relative paths.
+  const rawNext = searchParams.get('next') ?? ''
+  const next    = rawNext.startsWith('/') && !rawNext.startsWith('//')
+    ? rawNext
+    : '/dashboard'
 
   if (code) {
     const supabase = await createClient()

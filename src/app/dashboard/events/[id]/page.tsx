@@ -493,6 +493,45 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
       {/* -- RSVP LIST -- */}
       <div>
         <SectionTitle>RSVPs ({rsvps.length} confirmed · {event.rsvp_count} attendees)</SectionTitle>
+
+        {/* Check-in progress bar */}
+        {rsvps.length > 0 && (() => {
+          const checkedIn = rsvps.filter(r => r.checked_in).reduce((s, r) => s + (r.party_size ?? 0), 0)
+          const total     = rsvps.reduce((s, r) => s + (r.party_size ?? 0), 0)
+          const rate      = total > 0 ? Math.round((checkedIn / total) * 100) : 0
+          return (
+            <div
+              className="rounded-xl p-4 mb-4 flex items-center gap-6"
+              style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.06)' }}
+            >
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-white/40 uppercase tracking-wide">Check-in progress</span>
+                  <span className="text-xs font-semibold" style={{ color: '#22c55e' }}>{rate}%</span>
+                </div>
+                <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${rate}%`, background: rate > 0 ? '#22c55e' : 'transparent' }}
+                  />
+                </div>
+                <p className="text-xs text-white/20 mt-1.5">
+                  {checkedIn} of {total} attendees checked in
+                </p>
+              </div>
+              {event.rsvp_limit && (
+                <div className="text-center shrink-0">
+                  <p className="text-xs text-white/30 mb-0.5">Capacity</p>
+                  <p className="text-sm font-semibold text-white tabular-nums">
+                    {event.rsvp_count}
+                    <span className="text-white/20 font-normal"> / {event.rsvp_limit}</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          )
+        })()}
+
         <Card>
           {rsvps.length > 0 ? (
             <table className="w-full">
@@ -514,8 +553,10 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     <td className="py-2.5 text-sm text-white/40">{rsvp.attendees?.email}</td>
                     <td className="py-2.5 text-sm text-white/60 text-center">{rsvp.party_size}</td>
                     <td className="py-2.5 text-center">
-                      <span className="text-xs"
-                        style={{ color: rsvp.checked_in ? '#22c55e' : 'rgba(255,255,255,0.2)' }}>
+                      <span
+                        className="text-xs"
+                        style={{ color: rsvp.checked_in ? '#22c55e' : 'rgba(255,255,255,0.2)' }}
+                      >
                         {rsvp.checked_in ? '✓' : '—'}
                       </span>
                     </td>

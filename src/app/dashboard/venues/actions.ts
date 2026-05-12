@@ -4,25 +4,24 @@ import { createClient } from '@/lib/supabase/server'
 import { requireSession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { validateString, validatePositiveInt, sanitizeTags } from '@/lib/validate'
 
 // ─── CREATE VENUE ─────────────────────────────────────────────
 export async function createVenue(formData: FormData): Promise<void> {
   const session = await requireSession()
   const supabase = await createClient()
 
-  const name             = formData.get('name') as string
-  const address          = formData.get('address') as string
-  const city             = formData.get('city') as string
-  const state            = formData.get('state') as string
-  const capacity         = formData.get('capacity') as string
-  const vibeTagsRaw      = formData.get('vibe_tags') as string
-  const googleMapsEmbed  = formData.get('google_maps_embed') as string
-  const instagramUrl     = formData.get('instagram_url') as string
-  const active           = formData.get('active') !== 'false'
+  const name = validateString(formData.get('name'), 120)
+  if (!name) return
 
-  const vibeTags = vibeTagsRaw
-    ? vibeTagsRaw.split(',').map(t => t.trim()).filter(Boolean)
-    : []
+  const address         = validateString(formData.get('address'), 200)
+  const city            = validateString(formData.get('city'), 100)
+  const state           = validateString(formData.get('state'), 100)
+  const capacity        = validatePositiveInt(formData.get('capacity'), 100_000)
+  const vibeTags        = sanitizeTags(formData.get('vibe_tags'))
+  const googleMapsEmbed = validateString(formData.get('google_maps_embed'), 2000)
+  const instagramUrl    = validateString(formData.get('instagram_url'), 500)
+  const active          = formData.get('active') !== 'false'
 
   const slug = name
     .toLowerCase()
@@ -37,13 +36,13 @@ export async function createVenue(formData: FormData): Promise<void> {
     .insert({
       org_id:             session.orgId,
       name,
-      address:            address || null,
-      city:               city || null,
-      state:              state || null,
-      capacity:           capacity ? parseInt(capacity) : null,
+      address:            address         ?? null,
+      city:               city            ?? null,
+      state:              state           ?? null,
+      capacity:           capacity        ?? null,
       vibe_tags:          vibeTags.length > 0 ? vibeTags : null,
-      google_maps_embed:  googleMapsEmbed || null,
-      instagram_url:      instagramUrl || null,
+      google_maps_embed:  googleMapsEmbed ?? null,
+      instagram_url:      instagramUrl    ?? null,
       active,
       slug,
     })
@@ -61,27 +60,43 @@ export async function createVenue(formData: FormData): Promise<void> {
 
 // ─── UPDATE VENUE ─────────────────────────────────────────────
 export async function updateVenue(venueId: string, formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
 
-  const vibeTagsRaw = formData.get('vibe_tags') as string
-  const vibeTags = vibeTagsRaw
-    ? vibeTagsRaw.split(',').map(t => t.trim()).filter(Boolean)
-    : []
+  // Verify ownership — defense in depth on top of RLS.
+  const { data: existing } = await supabase
+    .from('venues')
+    .select('id')
+    .eq('id', venueId)
+    .eq('org_id', session.orgId)
+    .single()
 
-  const capacity = formData.get('capacity') as string
+  if (!existing) {
+    redirect('/dashboard/venues')
+  }
+
+  const name = validateString(formData.get('name'), 120)
+  if (!name) return
+
+  const address         = validateString(formData.get('address'), 200)
+  const city            = validateString(formData.get('city'), 100)
+  const state           = validateString(formData.get('state'), 100)
+  const capacity        = validatePositiveInt(formData.get('capacity'), 100_000)
+  const vibeTags        = sanitizeTags(formData.get('vibe_tags'))
+  const googleMapsEmbed = validateString(formData.get('google_maps_embed'), 2000)
+  const instagramUrl    = validateString(formData.get('instagram_url'), 500)
 
   const { error } = await supabase
     .from('venues')
     .update({
-      name:              formData.get('name') as string,
-      address:           (formData.get('address') as string) || null,
-      city:              (formData.get('city') as string) || null,
-      state:             (formData.get('state') as string) || null,
-      capacity:          capacity ? parseInt(capacity) : null,
+      name,
+      address:           address         ?? null,
+      city:              city            ?? null,
+      state:             state           ?? null,
+      capacity:          capacity        ?? null,
       vibe_tags:         vibeTags.length > 0 ? vibeTags : null,
-      google_maps_embed: (formData.get('google_maps_embed') as string) || null,
-      instagram_url:     (formData.get('instagram_url') as string) || null,
+      google_maps_embed: googleMapsEmbed ?? null,
+      instagram_url:     instagramUrl    ?? null,
       active:            formData.get('active') !== 'false',
     })
     .eq('id', venueId)

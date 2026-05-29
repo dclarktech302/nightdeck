@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { RSVPConfirmation } from '@/emails/RSVPConfirmation'
 import { NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
+import { validateEmail, validatePhone, validateString, validatePositiveInt } from '@/lib/validate'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -11,22 +12,29 @@ export async function POST(request: Request) {
     const { eventId, firstName, email, phone, partySize, source } = body
 
     // -- INPUT VALIDATION --
-    // Basic checks before touching the database.
-    if (!eventId || !firstName || !email || !partySize) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    if (!eventId || typeof eventId !== 'string') {
+      return NextResponse.json({ error: 'Missing event ID' }, { status: 400 })
     }
 
-    if (typeof partySize !== 'number' || partySize < 1 || partySize > 10) {
-      return NextResponse.json(
-        { error: 'Invalid party size' },
-        { status: 400 }
-      )
+    const validatedEmail = validateEmail(email)
+    if (!validatedEmail) {
+      return NextResponse.json({ error: 'Invalid email address' }, { status: 400 })
     }
 
-    const emailLower = email.toLowerCase().trim()
+    const validatedName = validateString(firstName, 100)
+    if (!validatedName) {
+      return NextResponse.json({ error: 'Name is required (max 100 characters)' }, { status: 400 })
+    }
+
+    const validatedPhone = validatePhone(phone)
+
+    const validatedPartySize = validatePositiveInt(partySize, 10)
+    if (validatedPartySize === null || validatedPartySize < 1) {
+      return NextResponse.json({ error: 'Party size must be between 1 and 10' }, { status: 400 })
+    }
+
+    const validatedSource = validateString(source, 50) ?? 'direct'
+
     const supabase = createServiceClient()
 
     // -- FETCH EVENT --
@@ -64,7 +72,7 @@ export async function POST(request: Request) {
     const { data: existingAttendee } = await supabase
       .from('attendees')
       .select('id')
-      .eq('email', emailLower)
+      .eq('email', validatedEmail)
       .maybeSingle()
 
     if (existingAttendee) {
@@ -75,10 +83,10 @@ export async function POST(request: Request) {
       const { data: newAttendee, error: attendeeError } = await supabase
         .from('attendees')
         .insert({
-          email:      emailLower,
-          first_name: firstName,
-          phone:      phone || null,
-          source:     source || 'direct',
+          email:      validatedEmail,
+          first_name: validatedName,
+          phone:      validatedPhone,
+          source:     validatedSource,
         })
         .select('id')
         .single()
@@ -117,7 +125,7 @@ export async function POST(request: Request) {
       .insert({
         event_id:    eventId,
         attendee_id: attendeeId,
-        party_size:  partySize,
+        party_size:  validatedPartySize,
         status:      'confirmed',
       })
       .select('confirmation_code')
@@ -144,10 +152,10 @@ export async function POST(request: Request) {
     // -- SEND CONFIRMATION EMAIL --
     const { error: emailError } = await resend.emails.send({
       from:    process.env.RESEND_FROM_EMAIL ?? 'onboarding@resend.dev',
-      to:      emailLower,
+      to:      validatedEmail,
       subject: `You're on the list — ${event.name}`,
       react:   RSVPConfirmation({
-        firstName,
+        firstName:        validatedName,
         eventName:        event.name,
         eventDate:        formattedDate,
         eventTime:        formattedTime,
@@ -157,7 +165,7 @@ export async function POST(request: Request) {
                             : null,
         doorPrice:        event.door_price ? `$${event.door_price}` : 'Free',
         confirmationCode: rsvp.confirmation_code,
-        partySize,
+        partySize:        validatedPartySize,
       }),
     })
 

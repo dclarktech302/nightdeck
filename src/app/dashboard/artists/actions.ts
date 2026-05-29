@@ -4,31 +4,33 @@ import { createClient } from '@/lib/supabase/server'
 import { requireSession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import {
+  validateString,
+  validateEmail,
+  validatePhone,
+  validatePositiveFloat,
+  sanitizeTags,
+} from '@/lib/validate'
 
 // ─── CREATE ARTIST ────────────────────────────────────────────
 export async function createArtist(formData: FormData): Promise<void> {
   const session = await requireSession()
   const supabase = await createClient()
 
-  const name         = formData.get('name') as string
-  const bio          = formData.get('bio') as string
-  const genreTagsRaw = formData.get('genre_tags') as string
-  const instagramUrl = formData.get('instagram_url') as string
-  const spotifyUrl   = formData.get('spotify_url') as string
-  const mediaUrl     = formData.get('media_url') as string
-  const techRider    = formData.get('tech_rider') as string
-  const contactEmail = formData.get('contact_email') as string
-  const contactPhone = formData.get('contact_phone') as string
-  const defaultRate  = formData.get('default_rate') as string
+  const name = validateString(formData.get('name'), 120)
+  if (!name) return
+
+  const bio          = validateString(formData.get('bio'), 2000)
+  const genreTags    = sanitizeTags(formData.get('genre_tags'))
+  const instagramUrl = validateString(formData.get('instagram_url'), 500)
+  const spotifyUrl   = validateString(formData.get('spotify_url'), 500)
+  const mediaUrl     = validateString(formData.get('media_url'), 500)
+  const techRider    = validateString(formData.get('tech_rider'), 2000)
+  const contactEmail = validateEmail(formData.get('contact_email'))
+  const contactPhone = validatePhone(formData.get('contact_phone'))
+  const defaultRate  = validatePositiveFloat(formData.get('default_rate'), 100_000)
   const vetted       = formData.get('vetted') === 'true'
 
-  // genre_tags is a comma-separated string from the form input
-  // split, trim whitespace, and filter empty strings
-  const genreTags = genreTagsRaw
-    ? genreTagsRaw.split(',').map(t => t.trim()).filter(Boolean)
-    : []
-
-  // Generate slug from name
   const slug = name
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
@@ -42,15 +44,15 @@ export async function createArtist(formData: FormData): Promise<void> {
     .insert({
       org_id:        session.orgId,
       name,
-      bio:           bio || null,
+      bio:           bio          ?? null,
       genre_tags:    genreTags.length > 0 ? genreTags : null,
-      instagram_url: instagramUrl || null,
-      spotify_url:   spotifyUrl || null,
-      media_url:     mediaUrl || null,
-      tech_rider:    techRider || null,
-      contact_email: contactEmail || null,
-      contact_phone: contactPhone || null,
-      default_rate:  defaultRate ? parseFloat(defaultRate) : null,
+      instagram_url: instagramUrl ?? null,
+      spotify_url:   spotifyUrl   ?? null,
+      media_url:     mediaUrl     ?? null,
+      tech_rider:    techRider    ?? null,
+      contact_email: contactEmail ?? null,
+      contact_phone: contactPhone ?? null,
+      default_rate:  defaultRate  ?? null,
       vetted,
       slug,
     })
@@ -68,29 +70,47 @@ export async function createArtist(formData: FormData): Promise<void> {
 
 // ─── UPDATE ARTIST ────────────────────────────────────────────
 export async function updateArtist(artistId: string, formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
 
-  const genreTagsRaw = formData.get('genre_tags') as string
-  const genreTags = genreTagsRaw
-    ? genreTagsRaw.split(',').map(t => t.trim()).filter(Boolean)
-    : []
+  // Verify ownership — defense in depth on top of RLS.
+  const { data: existing } = await supabase
+    .from('artists')
+    .select('id')
+    .eq('id', artistId)
+    .eq('org_id', session.orgId)
+    .single()
 
-  const defaultRate = formData.get('default_rate') as string
+  if (!existing) {
+    redirect('/dashboard/artists')
+  }
+
+  const name = validateString(formData.get('name'), 120)
+  if (!name) return
+
+  const bio          = validateString(formData.get('bio'), 2000)
+  const genreTags    = sanitizeTags(formData.get('genre_tags'))
+  const instagramUrl = validateString(formData.get('instagram_url'), 500)
+  const spotifyUrl   = validateString(formData.get('spotify_url'), 500)
+  const mediaUrl     = validateString(formData.get('media_url'), 500)
+  const techRider    = validateString(formData.get('tech_rider'), 2000)
+  const contactEmail = validateEmail(formData.get('contact_email'))
+  const contactPhone = validatePhone(formData.get('contact_phone'))
+  const defaultRate  = validatePositiveFloat(formData.get('default_rate'), 100_000)
 
   const { error } = await supabase
     .from('artists')
     .update({
-      name:          formData.get('name') as string,
-      bio:           (formData.get('bio') as string) || null,
+      name,
+      bio:           bio          ?? null,
       genre_tags:    genreTags.length > 0 ? genreTags : null,
-      instagram_url: (formData.get('instagram_url') as string) || null,
-      spotify_url:   (formData.get('spotify_url') as string) || null,
-      media_url:     (formData.get('media_url') as string) || null,
-      tech_rider:    (formData.get('tech_rider') as string) || null,
-      contact_email: (formData.get('contact_email') as string) || null,
-      contact_phone: (formData.get('contact_phone') as string) || null,
-      default_rate:  defaultRate ? parseFloat(defaultRate) : null,
+      instagram_url: instagramUrl ?? null,
+      spotify_url:   spotifyUrl   ?? null,
+      media_url:     mediaUrl     ?? null,
+      tech_rider:    techRider    ?? null,
+      contact_email: contactEmail ?? null,
+      contact_phone: contactPhone ?? null,
+      default_rate:  defaultRate  ?? null,
       vetted:        formData.get('vetted') === 'true',
     })
     .eq('id', artistId)
@@ -105,12 +125,24 @@ export async function updateArtist(artistId: string, formData: FormData): Promis
   revalidatePath('/artists')
 }
 
-// ─── DELETE ARTIST ────────────────────────────────────────────
+// ─── UNVET ARTIST ─────────────────────────────────────────────
 // Soft approach — set vetted to false to hide from public
 // rather than hard deleting which would break event history
 export async function unvetArtist(artistId: string): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
+
+  // Verify ownership — defense in depth on top of RLS.
+  const { data: existing } = await supabase
+    .from('artists')
+    .select('id')
+    .eq('id', artistId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!existing) {
+    redirect('/dashboard/artists')
+  }
 
   const { error } = await supabase
     .from('artists')

@@ -7,9 +7,15 @@ export async function POST(request: Request) {
     const body = await request.json()
     const { confirmationCode, eventId } = body
 
-    if (!confirmationCode || !eventId) {
+    if (!confirmationCode || typeof confirmationCode !== 'string') {
       return NextResponse.json(
-        { error: 'Missing confirmation code or event ID' },
+        { error: 'Missing confirmation code' },
+        { status: 400 }
+      )
+    }
+    if (!eventId || typeof eventId !== 'string') {
+      return NextResponse.json(
+        { error: 'Missing event ID' },
         { status: 400 }
       )
     }
@@ -25,8 +31,38 @@ export async function POST(request: Request) {
       )
     }
 
+    // Verify the user has an org profile
+    const { data: profile } = await supabaseAuth
+      .from('user_profiles')
+      .select('org_id')
+      .eq('user_id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+
     // Use service client for the lookup and update
     const supabase = createServiceClient()
+
+    // Verify the event belongs to the user's org before processing check-in.
+    // The service client bypasses RLS, so we must enforce ownership here explicitly.
+    const { data: eventOwnership } = await supabase
+      .from('events')
+      .select('id')
+      .eq('id', eventId)
+      .eq('org_id', profile.org_id)
+      .single()
+
+    if (!eventOwnership) {
+      return NextResponse.json(
+        { error: 'Forbidden' },
+        { status: 403 }
+      )
+    }
 
     // Find the RSVP by confirmation code scoped to this event
     const { data: rsvp, error: rsvpError } = await supabase

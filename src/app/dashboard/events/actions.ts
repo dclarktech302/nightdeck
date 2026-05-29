@@ -4,22 +4,29 @@ import { createClient } from '@/lib/supabase/server'
 import { requireSession } from '@/lib/session'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { validateString, validatePositiveInt, validatePositiveFloat } from '@/lib/validate'
 import type { Enums } from '@/types/database.types'
+
+const VALID_EVENT_STATUSES = new Set(['draft', 'pending', 'confirmed', 'completed', 'cancelled'])
 
 // ─── CREATE EVENT ─────────────────────────────────────────────
 export async function createEvent(formData: FormData): Promise<void> {
   const session = await requireSession()
   const supabase = await createClient()
 
-  const name        = formData.get('name') as string
-  const description = formData.get('description') as string
-  const eventDate   = formData.get('event_date') as string
-  const doorsOpen   = formData.get('doors_open') as string
-  const venueId     = formData.get('venue_id') as string
-  const doorPrice   = formData.get('door_price') as string
-  const rsvpLimit   = formData.get('rsvp_limit') as string
-  const status      = (formData.get('status') || 'draft') as Enums<'event_status'>
+  const name      = validateString(formData.get('name'), 200)
+  const eventDate = validateString(formData.get('event_date'), 50)
+  if (!name || !eventDate) return
+
+  const description = validateString(formData.get('description'), 5000)
+  const doorsOpen   = validateString(formData.get('doors_open'), 50)
+  const venueId     = validateString(formData.get('venue_id'), 50)
+  const doorPrice   = validatePositiveFloat(formData.get('door_price'), 10_000)
+  const rsvpLimit   = validatePositiveInt(formData.get('rsvp_limit'), 100_000)
   const featured    = formData.get('featured') === 'true'
+
+  const rawStatus = formData.get('status') as string
+  const status = (VALID_EVENT_STATUSES.has(rawStatus) ? rawStatus : 'draft') as Enums<'event_status'>
 
   const slug = name
     .toLowerCase()
@@ -34,12 +41,12 @@ export async function createEvent(formData: FormData): Promise<void> {
     .insert({
       org_id:      session.orgId,
       name,
-      description: description || null,
+      description: description ?? null,
       event_date:  eventDate,
-      doors_open:  doorsOpen || null,
-      venue_id:    venueId || null,
-      door_price:  doorPrice ? parseFloat(doorPrice) : null,
-      rsvp_limit:  rsvpLimit ? parseInt(rsvpLimit) : null,
+      doors_open:  doorsOpen   ?? null,
+      venue_id:    venueId     ?? null,
+      door_price:  doorPrice   ?? null,
+      rsvp_limit:  rsvpLimit   ?? null,
       status,
       featured,
       slug,
@@ -58,20 +65,44 @@ export async function createEvent(formData: FormData): Promise<void> {
 
 // ─── UPDATE EVENT ─────────────────────────────────────────────
 export async function updateEvent(eventId: string, formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
-  const status = formData.get('status') as Enums<'event_status'>
+
+  // Verify ownership — defense in depth on top of RLS.
+  const { data: existing } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!existing) {
+    redirect('/dashboard/events')
+  }
+
+  const name      = validateString(formData.get('name'), 200)
+  const eventDate = validateString(formData.get('event_date'), 50)
+  if (!name || !eventDate) return
+
+  const description = validateString(formData.get('description'), 5000)
+  const doorsOpen   = validateString(formData.get('doors_open'), 50)
+  const venueId     = validateString(formData.get('venue_id'), 50)
+  const doorPrice   = validatePositiveFloat(formData.get('door_price'), 10_000)
+  const rsvpLimit   = validatePositiveInt(formData.get('rsvp_limit'), 100_000)
+
+  const rawStatus = formData.get('status') as string
+  const status = (VALID_EVENT_STATUSES.has(rawStatus) ? rawStatus : 'draft') as Enums<'event_status'>
 
   const { error } = await supabase
     .from('events')
     .update({
-      name:        formData.get('name') as string,
-      description: (formData.get('description') as string) || null,
-      event_date:  formData.get('event_date') as string,
-      doors_open:  (formData.get('doors_open') as string) || null,
-      venue_id:    (formData.get('venue_id') as string) || null,
-      door_price:  formData.get('door_price') ? parseFloat(formData.get('door_price') as string) : null,
-      rsvp_limit:  formData.get('rsvp_limit') ? parseInt(formData.get('rsvp_limit') as string) : null,
+      name,
+      description: description ?? null,
+      event_date:  eventDate,
+      doors_open:  doorsOpen   ?? null,
+      venue_id:    venueId     ?? null,
+      door_price:  doorPrice   ?? null,
+      rsvp_limit:  rsvpLimit   ?? null,
       status,
       featured:    formData.get('featured') === 'true',
     })
@@ -90,21 +121,33 @@ export async function updateEvent(eventId: string, formData: FormData): Promise<
 
 // ─── ADD ARTIST TO LINEUP ─────────────────────────────────────
 export async function addArtistToLineup(formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
 
-  const eventId   = formData.get('event_id') as string
-  const artistId  = formData.get('artist_id') as string
-  const agreedPay = formData.get('agreed_pay') as string
-  const setOrder  = formData.get('set_order') as string
+  const eventId  = validateString(formData.get('event_id'), 50)
+  const artistId = validateString(formData.get('artist_id'), 50)
+  if (!eventId || !artistId) return
+
+  // Verify caller owns the event
+  const { data: eventCheck } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!eventCheck) return
+
+  const agreedPay = validatePositiveFloat(formData.get('agreed_pay'), 100_000)
+  const setOrder  = validatePositiveInt(formData.get('set_order'), 999)
 
   const { error } = await supabase
     .from('event_artists')
     .insert({
       event_id:       eventId,
       artist_id:      artistId,
-      agreed_pay:     agreedPay ? parseFloat(agreedPay) : null,
-      set_order:      setOrder ? parseInt(setOrder) : null,
+      agreed_pay:     agreedPay ?? null,
+      set_order:      setOrder  ?? null,
       booking_status: 'confirmed',
       pay_status:     'pending',
     })
@@ -119,8 +162,18 @@ export async function addArtistToLineup(formData: FormData): Promise<void> {
 
 // ─── REMOVE ARTIST FROM LINEUP ────────────────────────────────
 export async function removeArtistFromLineup(eventArtistId: string, eventId: string): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
+
+  // Verify caller owns the event before touching the lineup row
+  const { data: eventCheck } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!eventCheck) return
 
   const { error } = await supabase
     .from('event_artists')
@@ -137,8 +190,18 @@ export async function removeArtistFromLineup(eventArtistId: string, eventId: str
 
 // ─── MARK ARTIST PAID ─────────────────────────────────────────
 export async function markArtistPaid(eventArtistId: string, eventId: string): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
+
+  // Verify caller owns the event
+  const { data: eventCheck } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!eventCheck) return
 
   const { error } = await supabase
     .from('event_artists')
@@ -155,21 +218,34 @@ export async function markArtistPaid(eventArtistId: string, eventId: string): Pr
 
 // ─── ADD EXPENSE ──────────────────────────────────────────────
 export async function addExpense(formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
 
-  const eventId     = formData.get('event_id') as string
-  const category    = formData.get('category') as Enums<'expense_category'>
-  const description = formData.get('description') as string
-  const amount      = formData.get('amount') as string
+  const eventId  = validateString(formData.get('event_id'), 50)
+  const category = formData.get('category') as Enums<'expense_category'>
+  const amount   = validatePositiveFloat(formData.get('amount'), 1_000_000)
+
+  if (!eventId || !category || amount === null) return
+
+  // Verify caller owns the event
+  const { data: eventCheck } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!eventCheck) return
+
+  const description = validateString(formData.get('description'), 500)
 
   const { error } = await supabase
     .from('expenses')
     .insert({
       event_id:    eventId,
       category,
-      description: description || null,
-      amount:      parseFloat(amount),
+      description: description ?? null,
+      amount,
     })
 
   if (error) {
@@ -182,21 +258,34 @@ export async function addExpense(formData: FormData): Promise<void> {
 
 // ─── ADD REVENUE ──────────────────────────────────────────────
 export async function addRevenue(formData: FormData): Promise<void> {
-  await requireSession()
+  const session = await requireSession()
   const supabase = await createClient()
 
-  const eventId = formData.get('event_id') as string
+  const eventId = validateString(formData.get('event_id'), 50)
   const source  = formData.get('source') as Enums<'revenue_source'>
-  const amount  = formData.get('amount') as string
-  const notes   = formData.get('notes') as string
+  const amount  = validatePositiveFloat(formData.get('amount'), 1_000_000)
+
+  if (!eventId || !source || amount === null) return
+
+  // Verify caller owns the event
+  const { data: eventCheck } = await supabase
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('org_id', session.orgId)
+    .single()
+
+  if (!eventCheck) return
+
+  const notes = validateString(formData.get('notes'), 500)
 
   const { error } = await supabase
     .from('revenue')
     .insert({
       event_id: eventId,
       source,
-      amount:   parseFloat(amount),
-      notes:    notes || null,
+      amount,
+      notes:    notes ?? null,
     })
 
   if (error) {

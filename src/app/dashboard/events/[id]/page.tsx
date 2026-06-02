@@ -6,6 +6,7 @@ import { getRSVPsByEvent } from '@/lib/queries/rsvps'
 import { getEventPnL, getExpensesByEvent, getRevenueByEvent } from '@/lib/queries/financials'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { headers } from 'next/headers'
 import { SavedBanner } from '@/components/dashboard/SavedBanner'
 import { AttendQRCode } from '@/components/attend/AttendQRCode'
 import {
@@ -70,6 +71,11 @@ function InputField({ label, name, type = 'text', defaultValue, placeholder, req
 export default async function EventDetailPage({ params }: EventDetailPageProps) {
   const { id } = await params
   await requireSession()
+
+  const headersList = await headers()
+  const host     = headersList.get('host') ?? 'localhost:3000'
+  const protocol = host.startsWith('localhost') ? 'http' : 'https'
+  const attendUrl = `${protocol}://${host}/attend/${id}`
 
   const [event, artists, venues, rsvps, pnl, expenses, revenue] = await Promise.all([
     getDashboardEventById(id),
@@ -578,7 +584,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           className="rounded-xl p-5"
           style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.06)' }}
         >
-          <AttendQRCode eventId={id} />
+          <AttendQRCode url={attendUrl} />
         </div>
       </div>
 

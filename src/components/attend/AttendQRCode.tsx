@@ -3,12 +3,10 @@
 import { QRCodeSVG } from 'qrcode.react'
 
 interface Props {
-  eventId: string
+  url: string
 }
 
-export function AttendQRCode({ eventId }: Props) {
-  const url = `https://nightdeck.vercel.app/attend/${eventId}`
-
+export function AttendQRCode({ url }: Props) {
   return (
     <div className="flex flex-col sm:flex-row items-start gap-6">
       <div

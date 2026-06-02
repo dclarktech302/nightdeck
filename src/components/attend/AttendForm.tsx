@@ -43,21 +43,23 @@ export function AttendForm({ eventId }: Props) {
   const [primaryReason,  setPrimaryReason]  = useState<PrimaryReason | null>(null)
   const [loading,        setLoading]        = useState(false)
   const [done,           setDone]           = useState(false)
+  const [errorMsg,       setErrorMsg]       = useState<string | null>(null)
 
   const allAnswered = attendeeType !== null && firstTime !== null && referralSource !== null && primaryReason !== null
 
   async function handleSubmit() {
     if (!allAnswered || loading) return
     setLoading(true)
+    setErrorMsg(null)
 
     try {
       const res = await fetch('/api/attend', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          event_id:       eventId,
-          attendee_type:  attendeeType,
-          first_time:     firstTime,
+          event_id:        eventId,
+          attendee_type:   attendeeType,
+          first_time:      firstTime,
           referral_source: referralSource,
           primary_reason:  primaryReason,
         }),
@@ -65,10 +67,14 @@ export function AttendForm({ eventId }: Props) {
 
       if (res.ok || res.status === 429) {
         setDone(true)
+        return
       }
+
+      const body = await res.json().catch(() => ({}))
+      console.error('attend error', res.status, body)
+      setErrorMsg(body.error ?? 'Something went wrong. Please try again.')
     } catch {
-      // network failure — still show thank you rather than confusing the user
-      setDone(true)
+      setErrorMsg('Network error. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }
@@ -161,6 +167,12 @@ export function AttendForm({ eventId }: Props) {
       >
         {loading ? 'Submitting…' : 'Check in'}
       </button>
+
+      {errorMsg && (
+        <p className="text-sm text-center" style={{ color: '#f43f5e' }}>
+          {errorMsg}
+        </p>
+      )}
 
     </div>
   )

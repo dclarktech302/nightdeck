@@ -7,6 +7,7 @@ import { getEventPnL, getExpensesByEvent, getRevenueByEvent } from '@/lib/querie
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { SavedBanner } from '@/components/dashboard/SavedBanner'
+import { AttendQRCode } from '@/components/attend/AttendQRCode'
 import {
   updateEvent,
   addArtistToLineup,
@@ -568,6 +569,17 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <p className="text-sm text-white/20 text-center py-4">No RSVPs yet.</p>
           )}
         </Card>
+      </div>
+
+      {/* -- COMMUNITY CHECK-IN QR -- */}
+      <div>
+        <SectionTitle>Community check-in</SectionTitle>
+        <div
+          className="rounded-xl p-5"
+          style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <AttendQRCode eventId={id} />
+        </div>
       </div>
 
     </div>

@@ -28,10 +28,10 @@ export function DashboardSidebar() {
         className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-5 border-b"
         style={{ background: '#0a0a0a', borderColor: 'rgba(255,255,255,0.06)' }}
       >
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-sm font-bold text-white tracking-tight">Ongho</span>
           <span className="text-sm font-bold tracking-tight" style={{ color: '#c9a84c' }}>Ops</span>
-        </div>
+        </Link>
         <button
           onClick={() => setOpen(o => !o)}
           className="flex flex-col gap-1.5 p-2"

@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/dashboard',          label: 'Overview',  icon: '◈' },
@@ -14,7 +15,15 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname      = usePathname()
+  const router        = useRouter()
   const [open, setOpen] = useState(false)
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   // Close sidebar on route change on mobile
   useEffect(() => {
@@ -126,6 +135,17 @@ export function DashboardSidebar() {
             )
           })}
         </nav>
+
+        {/* Sign out — mobile only (desktop uses DashboardHeader) */}
+        <div className="md:hidden px-3 pb-1">
+          <button
+            onClick={handleSignOut}
+            className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors"
+            style={{ color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            Sign out
+          </button>
+        </div>
 
         {/* Shore Pulse preview link */}
         <div

@@ -38,7 +38,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
       {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader session={session} />
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 pt-20 md:pt-6 overflow-auto">
           {children}
         </main>
       </div>

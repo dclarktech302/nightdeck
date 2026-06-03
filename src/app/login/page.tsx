@@ -1,5 +1,4 @@
-import { PINLogin } from '@/components/auth/PINLogin'
-import { PasswordLogin } from '@/components/auth/PasswordLogin'
+import { LoginForm } from '@/components/auth/LoginForm'
 
 interface LoginPageProps {
   searchParams: Promise<{ message?: string; error?: string }>
@@ -7,8 +6,6 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const { message, error } = await searchParams
-  // Re-open the password form automatically when an error is present
-  // (e.g. after a failed password attempt redirects back here)
   const hasError = Boolean(error)
 
   return (
@@ -25,11 +22,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <p className="text-sm text-white/30">Sign in to continue</p>
         </div>
 
-        {/* Default: PIN login for returning users */}
-        <PINLogin />
-
-        {/* Fallback: password login for first login or forgot PIN */}
-        <PasswordLogin defaultOpen={hasError} />
+        <LoginForm defaultOpen={hasError} />
 
         {message && (
           <p

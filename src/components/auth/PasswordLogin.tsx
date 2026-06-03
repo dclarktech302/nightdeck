@@ -1,22 +1,31 @@
 'use client'
 
 import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
 import { loginWithPassword } from '@/app/login/actions'
 
-export function PasswordLogin({ defaultOpen = false }: { defaultOpen?: boolean }) {
-  const [open, setOpen] = useState(defaultOpen)
+interface Props {
+  onBack: () => void
+}
 
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="w-full text-xs text-center py-1 transition-colors"
-        style={{ color: 'rgba(255,255,255,0.25)' }}
-      >
-        Forgot PIN? Sign in with password
-      </button>
-    )
+export function PasswordLogin({ onBack }: Props) {
+  const [email,      setEmail]      = useState('')
+  const [resetSent,  setResetSent]  = useState(false)
+  const [resetting,  setResetting]  = useState(false)
+  const [resetError, setResetError] = useState('')
+
+  async function handleReset() {
+    if (!email) {
+      setResetError('Enter your email above first.')
+      return
+    }
+    setResetting(true)
+    setResetError('')
+    const supabase = createClient()
+    await supabase.auth.resetPasswordForEmail(email)
+    // Always show confirmation — don't leak whether the email exists
+    setResetSent(true)
+    setResetting(false)
   }
 
   return (
@@ -34,6 +43,8 @@ export function PasswordLogin({ defaultOpen = false }: { defaultOpen?: boolean }
           required
           autoComplete="email"
           placeholder="Email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
           className="w-full px-3 py-2.5 rounded-lg text-sm text-white placeholder-white/20 outline-none"
           style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
         />
@@ -55,9 +66,33 @@ export function PasswordLogin({ defaultOpen = false }: { defaultOpen?: boolean }
         </button>
       </form>
 
+      {/* Forgot password */}
+      <div className="text-center">
+        {resetSent ? (
+          <p className="text-xs" style={{ color: '#22c55e' }}>
+            Check your email for a reset link.
+          </p>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={resetting}
+              className="text-xs transition-colors disabled:opacity-40"
+              style={{ color: 'rgba(255,255,255,0.25)' }}
+            >
+              {resetting ? 'Sending…' : 'Forgot password?'}
+            </button>
+            {resetError && (
+              <p className="text-xs mt-1" style={{ color: '#f43f5e' }}>{resetError}</p>
+            )}
+          </>
+        )}
+      </div>
+
       <button
         type="button"
-        onClick={() => setOpen(false)}
+        onClick={onBack}
         className="w-full text-xs text-center py-1 transition-colors"
         style={{ color: 'rgba(255,255,255,0.2)' }}
       >

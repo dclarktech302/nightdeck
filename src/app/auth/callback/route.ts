@@ -21,7 +21,19 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Session established — send them to the dashboard.
+      // Check AMR to detect password-recovery flows.
+      // If the user clicked a "reset password" link, amr contains 'recovery'
+      // and we send them to the PIN reset page instead of the dashboard.
+      const { data: { session } } = await supabase.auth.getSession()
+      const user = session?.user as any
+      const isRecovery = user?.amr?.some(
+        (entry: { method: string }) => entry.method === 'recovery'
+      )
+
+      if (isRecovery) {
+        return NextResponse.redirect(`${origin}/auth/reset-password`)
+      }
+
       return NextResponse.redirect(`${origin}${next}`)
     }
   }

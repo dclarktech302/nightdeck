@@ -6,9 +6,10 @@ import type { SessionContext } from '@/types'
 
 interface DashboardHeaderProps {
   session: SessionContext
+  greeting: string
 }
 
-export function DashboardHeader({ session }: DashboardHeaderProps) {
+export function DashboardHeader({ session, greeting }: DashboardHeaderProps) {
   const router = useRouter()
 
   async function handleSignOut() {
@@ -26,8 +27,10 @@ export function DashboardHeader({ session }: DashboardHeaderProps) {
         borderColor: 'rgba(255,255,255,0.06)',
       }}
     >
-      {/* Left — page context (children can override via portal later) */}
-      <div />
+      {/* Greeting */}
+      <p className="text-sm text-white/30">
+        Hey, <span className="text-white/60">{greeting}</span>
+      </p>
 
       {/* Right — user controls */}
       <div className="flex items-center gap-4">

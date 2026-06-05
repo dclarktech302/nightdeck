@@ -38,6 +38,19 @@ export async function GET(request: NextRequest) {
     }
   }
 
+  // token_hash flow — used by invite links, magic links, and email confirmation.
+  const token_hash = searchParams.get('token_hash')
+  const type       = searchParams.get('type')
+
+  if (token_hash && type) {
+    const supabase = await createClient()
+    const { error } = await supabase.auth.verifyOtp({ token_hash, type: type as any })
+
+    if (!error) {
+      return NextResponse.redirect(`${origin}${next}`)
+    }
+  }
+
   // Something went wrong — send back to login.
   return NextResponse.redirect(`${origin}/login?message=Sign-in link expired. Try again.`)
 }

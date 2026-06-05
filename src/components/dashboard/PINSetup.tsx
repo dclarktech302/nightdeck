@@ -13,8 +13,8 @@ export function PINSetup() {
 
   async function handleSetPIN(e: React.FormEvent) {
     e.preventDefault()
-    if (pin.length < 4) {
-      setMessage('PIN must be at least 4 digits')
+    if (pin.length < 6) {
+      setMessage('PIN must be at least 6 digits')
       setState('error')
       return
     }
@@ -65,7 +65,7 @@ export function PINSetup() {
               pattern="[0-9]*"
               value={pin}
               onChange={e => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-              placeholder="4-8 digits"
+              placeholder="6-8 digits"
               className="w-full px-3 py-2 rounded-lg text-sm text-white placeholder-white/20 outline-none tracking-widest"
               style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
             />

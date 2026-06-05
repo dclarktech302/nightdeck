@@ -32,7 +32,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     <div className="min-h-screen flex" style={{ background: '#000000' }}>
 
       {/* Sidebar */}
-      <DashboardSidebar />
+      <DashboardSidebar greeting={greeting} />
 
       <Toaster
         position="top-right"

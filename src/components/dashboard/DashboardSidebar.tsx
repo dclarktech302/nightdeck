@@ -13,7 +13,11 @@ const navItems = [
   { href: '/dashboard/settings', label: 'Settings',  icon: '◦' },
 ]
 
-export function DashboardSidebar() {
+interface DashboardSidebarProps {
+  greeting?: string
+}
+
+export function DashboardSidebar({ greeting }: DashboardSidebarProps) {
   const pathname      = usePathname()
   const router        = useRouter()
   const [open, setOpen] = useState(false)
@@ -110,6 +114,15 @@ export function DashboardSidebar() {
 
         {/* Mobile sidebar top padding to clear the header */}
         <div className="md:hidden h-16 shrink-0" />
+
+        {/* Greeting */}
+        {greeting && (
+          <div className="px-5 py-3 border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+            <p className="text-xs text-white/30">
+              Hey, <span className="text-white/60">{greeting}</span>
+            </p>
+          </div>
+        )}
 
         {/* Navigation */}
         <nav className="flex-1 p-3 space-y-0.5">

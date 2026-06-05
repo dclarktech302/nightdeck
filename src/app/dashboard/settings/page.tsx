@@ -1,7 +1,7 @@
 import { PINSetup } from '@/components/dashboard/PINSetup'
+import { DisplayNameForm } from '@/components/dashboard/DisplayNameForm'
 import { requireSession } from '@/lib/session'
 import { createClient } from '@/lib/supabase/server'
-import { updateDisplayName } from './actions'
 
 export default async function SettingsPage() {
   const session  = await requireSession()
@@ -37,27 +37,7 @@ export default async function SettingsPage() {
         </div>
 
         {/* Display name */}
-        <form action={updateDisplayName} className="space-y-2">
-          <label className="text-xs font-medium text-white/60">Display name</label>
-          <div className="flex gap-2">
-            <input
-              name="display_name"
-              type="text"
-              defaultValue={displayName ?? ''}
-              placeholder="e.g. Alex"
-              maxLength={80}
-              className="flex-1 px-3 py-2 rounded-lg text-sm text-white placeholder-white/20 outline-none"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
-            />
-            <button
-              type="submit"
-              className="px-3 py-2 rounded-lg text-sm transition-colors"
-              style={{ color: '#c9a84c', border: '1px solid oklch(0.78 0.15 85 / 0.2)' }}
-            >
-              Save
-            </button>
-          </div>
-        </form>
+        <DisplayNameForm defaultValue={displayName ?? ''} />
 
         <div className="h-px" style={{ background: 'rgba(255,255,255,0.06)' }} />
 

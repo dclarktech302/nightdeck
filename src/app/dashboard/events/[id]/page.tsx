@@ -7,6 +7,7 @@ import { getEventPnL, getExpensesByEvent, getRevenueByEvent } from '@/lib/querie
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { SavedBanner } from '@/components/dashboard/SavedBanner'
+import { AttendQRCode } from '@/components/attend/AttendQRCode'
 import {
   updateEvent,
   addArtistToLineup,
@@ -70,6 +71,9 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
   const { id } = await params
   await requireSession()
 
+  const baseUrl   = process.env.NEXT_PUBLIC_APP_URL ?? 'https://nightdeck.vercel.app'
+  const attendUrl = `${baseUrl}/attend/${id}`
+
   const [event, artists, venues, rsvps, pnl, expenses, revenue] = await Promise.all([
     getDashboardEventById(id),
     getDashboardArtists(),
@@ -98,7 +102,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     <div className="max-w-4xl mx-auto space-y-8">
 
       {/* Page header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">{event.name}</h1>
           <p className="text-sm text-white/30 mt-1">
@@ -108,12 +112,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </p>
         </div>
         {event.status === 'confirmed' && event.slug ? (
-  
           <a
             href={`/events/${event.slug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs transition-colors px-3 py-1.5 rounded-lg"
+            className="text-xs transition-colors px-3 py-1.5 rounded-lg self-start shrink-0"
             style={{
               color: '#c9a84c',
               border: '1px solid oklch(0.78 0.15 85 / 0.3)',
@@ -123,7 +126,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
           </a>
         ) : (
           <span
-            className="text-xs px-3 py-1.5 rounded-lg"
+            className="text-xs px-3 py-1.5 rounded-lg self-start shrink-0"
             style={{
               color: 'rgba(255,255,255,0.2)',
               border: '1px solid rgba(255,255,255,0.06)',
@@ -157,7 +160,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InputField
                 label="Event date & time *"
                 name="event_date"
@@ -188,7 +191,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               </select>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <InputField
                 label="Door price ($)"
                 name="door_price"
@@ -310,11 +313,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <form action={addArtistToLineup} className="space-y-3">
               <input type="hidden" name="event_id" value={id} />
               <p className="text-xs text-white/30">Add artist to lineup</p>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <select
                   name="artist_id"
                   required
-                  className="col-span-1 px-3 py-2 rounded-lg text-sm text-white outline-none"
+                  className="px-3 py-2 rounded-lg text-sm text-white outline-none"
                   style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                 >
                   <option value="">Select artist</option>
@@ -359,7 +362,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
         {/* P&L summary */}
         {pnl && (
-          <div className="grid grid-cols-4 gap-3 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
             {[
               { label: 'Revenue',   value: pnl.total_revenue,  color: '#22c55e' },
               { label: 'Expenses',  value: pnl.total_expenses, color: '#f43f5e' },
@@ -538,7 +541,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
               <thead>
                 <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
                   <th className="text-left py-2 text-[11px] font-medium text-white/30 uppercase tracking-wider">Name</th>
-                  <th className="text-left py-2 text-[11px] font-medium text-white/30 uppercase tracking-wider">Email</th>
+                  <th className="text-left py-2 text-[11px] font-medium text-white/30 uppercase tracking-wider hidden sm:table-cell">Email</th>
                   <th className="text-center py-2 text-[11px] font-medium text-white/30 uppercase tracking-wider">Party</th>
                   <th className="text-center py-2 text-[11px] font-medium text-white/30 uppercase tracking-wider">Checked in</th>
                 </tr>
@@ -550,7 +553,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
                     style={{ borderBottom: i < rsvps.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
                   >
                     <td className="py-2.5 text-sm text-white">{rsvp.attendees?.first_name}</td>
-                    <td className="py-2.5 text-sm text-white/40">{rsvp.attendees?.email}</td>
+                    <td className="py-2.5 text-sm text-white/40 hidden sm:table-cell">{rsvp.attendees?.email}</td>
                     <td className="py-2.5 text-sm text-white/60 text-center">{rsvp.party_size}</td>
                     <td className="py-2.5 text-center">
                       <span
@@ -568,6 +571,17 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
             <p className="text-sm text-white/20 text-center py-4">No RSVPs yet.</p>
           )}
         </Card>
+      </div>
+
+      {/* -- COMMUNITY CHECK-IN QR -- */}
+      <div>
+        <SectionTitle>Community check-in</SectionTitle>
+        <div
+          className="rounded-xl p-5"
+          style={{ background: '#0a0a0a', border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <AttendQRCode url={attendUrl} />
+        </div>
       </div>
 
     </div>

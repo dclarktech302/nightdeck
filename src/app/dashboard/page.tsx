@@ -2,6 +2,7 @@ import { requireSession } from '@/lib/session'
 import { createClient } from '@/lib/supabase/server'
 import { getDashboardEvents } from '@/lib/queries/events'
 import { RSVPCounter } from '@/components/dashboard/RSVPCounter'
+import { WelcomeBanner } from '@/components/dashboard/WelcomeBanner'
 import Link from 'next/link'
 
 async function getDashboardStats() {
@@ -213,6 +214,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
+
+      <WelcomeBanner />
 
       {/* Page title */}
       <div>

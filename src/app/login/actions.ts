@@ -2,26 +2,22 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { validateEmail, validateString } from '@/lib/validate'
 
-export async function login(formData: FormData) {
-  const supabase = await createClient()
+export async function loginWithPassword(formData: FormData): Promise<void> {
+  const email    = validateEmail(formData.get('email'))
+  const password = validateString(formData.get('password'), 100)
 
-  const email = formData.get('email') as string
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      // After clicking the magic link, Supabase redirects here.
-      // The callback route (Part 3) exchanges the token for a session.
-      emailRedirectTo: `${process.env.APP_URL ?? process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
-    },
-  })
-
-  if (error) {
-    // In production, be vague — don't expose auth error details publicly.
-    redirect('/login?message=Could not send sign-in link. Try again.')
+  if (!email || !password) {
+    redirect('/login?error=1&message=Email and password are required.')
   }
 
-  // No error — email sent. Redirect to confirmation page.
-  redirect('/login?message=Check your email for a sign-in link.')
+  const supabase = await createClient()
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+  if (error) {
+    redirect('/login?error=1&message=Invalid email or password.')
+  }
+
+  redirect('/dashboard')
 }

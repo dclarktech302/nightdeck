@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
 
 const navItems = [
   { href: '/dashboard',          label: 'Overview',  icon: '◈' },
@@ -14,7 +15,15 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname      = usePathname()
+  const router        = useRouter()
   const [open, setOpen] = useState(false)
+
+  async function handleSignOut() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/login')
+    router.refresh()
+  }
 
   // Close sidebar on route change on mobile
   useEffect(() => {
@@ -28,10 +37,10 @@ export function DashboardSidebar() {
         className="md:hidden fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-5 border-b"
         style={{ background: '#0a0a0a', borderColor: 'rgba(255,255,255,0.06)' }}
       >
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <span className="text-sm font-bold text-white tracking-tight">Ongho</span>
           <span className="text-sm font-bold tracking-tight" style={{ color: '#c9a84c' }}>Ops</span>
-        </div>
+        </Link>
         <button
           onClick={() => setOpen(o => !o)}
           className="flex flex-col gap-1.5 p-2"
@@ -73,13 +82,13 @@ export function DashboardSidebar() {
       {/* Sidebar — desktop: always visible. Mobile: slide in from left */}
       <aside
         className={`
-          fixed md:relative
-          top-0 left-0 h-full md:h-auto
+          fixed md:sticky md:top-0
+          top-0 left-0 h-full md:h-screen
           z-50 md:z-auto
           w-64 md:w-56
           flex flex-col
           border-r
-          min-h-screen
+          shrink-0
           transition-transform duration-300
           ${open ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
         `}
@@ -93,10 +102,10 @@ export function DashboardSidebar() {
           className="hidden md:flex h-16 items-center px-5 border-b shrink-0"
           style={{ borderColor: 'rgba(255,255,255,0.06)' }}
         >
-          <div className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2">
             <span className="text-sm font-bold text-white tracking-tight">Ongho</span>
             <span className="text-sm font-bold tracking-tight" style={{ color: '#c9a84c' }}>Ops</span>
-          </div>
+          </Link>
         </div>
 
         {/* Mobile sidebar top padding to clear the header */}
@@ -126,6 +135,17 @@ export function DashboardSidebar() {
             )
           })}
         </nav>
+
+        {/* Sign out — mobile only (desktop uses DashboardHeader) */}
+        <div className="md:hidden px-3 pb-1">
+          <button
+            onClick={handleSignOut}
+            className="w-full text-left px-3 py-2 rounded-lg text-sm transition-colors"
+            style={{ color: 'rgba(255,255,255,0.3)', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            Sign out
+          </button>
+        </div>
 
         {/* Shore Pulse preview link */}
         <div

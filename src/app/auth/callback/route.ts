@@ -4,6 +4,7 @@ import type { NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
+  console.log('Auth callback params:', Object.fromEntries(searchParams.entries()))
 
   // Supabase appends these to the redirect URL automatically.
   const code   = searchParams.get('code')

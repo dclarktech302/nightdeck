@@ -99,23 +99,9 @@ src/
 
 ## Authentication
 
-Authentication uses Supabase Auth. A user's PIN is their Supabase auth password: `PINLogin` calls `supabase.auth.signInWithPassword({ email, password: pin })`, and `PINSetup` and the reset page set a PIN with `supabase.auth.updateUser({ password: pin })`. The PIN form accepts digits only and caps the PIN at 8 digits, and the setup and reset forms require at least 4. These limits are enforced in the client forms only; nothing else in the repository enforces them. The "Sign in with password" fallback calls `signInWithPassword` through the `loginWithPassword` server action, so the PIN and the password are one credential.
+Authentication uses Supabase Auth. A user's PIN is stored as their Supabase auth password: PIN login calls `signInWithPassword` with the PIN, and setting a PIN calls `updateUser({ password: pin })`. The email and password fallback uses the same credential.
 
-After sign-in, `requireSession()` (`src/lib/session.ts`) verifies the user with `supabase.auth.getUser()` and reads `org_id` and `role` from `user_profiles`. A signed-in user with no profile row is redirected to `/login`.
-
-`src/proxy.ts` is the Next.js 16 proxy file (the renamed `middleware` convention). On each matched request it builds a Supabase server client from the request cookies, calls `supabase.auth.getUser()` (which refreshes the session cookies on the response), and redirects to `/login` when there is no user and the path starts with `/dashboard` or `/check-in`. All other paths pass through.
-
-The matcher excludes:
-
-- `_next/static`
-- `_next/image`
-- `favicon.ico`
-- `auth/callback`
-- files ending in `.svg`, `.png`, `.jpg`, `.jpeg`, `.gif` or `.webp`
-
-`/api/*` routes are not excluded from the proxy, but the proxy does not gate them. `/api/check-in` checks for a signed-in user and organization ownership itself. `/api/rsvp` and `/api/attend` are public.
-
-`/auth/callback` exchanges a `code` for a session or verifies a `token_hash`, then redirects to a relative `next` path (default `/dashboard`). Password-recovery sign-ins are sent to `/auth/reset-password`. Failures redirect to `/login`.
+`src/proxy.ts` refreshes the Supabase session on each request and redirects signed-out users to `/login` when the path starts with `/dashboard` or `/check-in`. Its matcher skips `_next/static`, `_next/image`, `favicon.ico`, `auth/callback`, and files ending in `.svg`, `.png`, `.jpg`, `.jpeg`, `.gif` or `.webp`.
 
 ## Data model
 

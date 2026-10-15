@@ -1,6 +1,6 @@
 # Schema reference
 
-The Supabase `public` schema as far as it can be confirmed from this repository: the generated types in `src/types/database.types.ts` and the code that reads or writes each table. Anything else is listed under [Needs confirmation](#needs-confirmation-from-the-supabase-dashboard).
+The Supabase `public` schema as far as it can be confirmed from this repository: the generated types in `src/types/database.types.ts` and the code that reads or writes each table. Anything else is in Supabase (see [Not in this repository](#not-in-this-repository)).
 
 Schema changes are applied by running SQL manually in the Supabase SQL editor, not through migrations. Nothing in this repository records them, so `database.types.ts` has to be regenerated or edited by hand afterwards. It is already out of date (see `user_profiles` and `event_attendance`).
 
@@ -103,15 +103,8 @@ Responses to the form at `/attend/[event_id]`. **Not in `database.types.ts`.** E
 
 Columns written: `event_id`, `attendee_type` (attendee, performer), `first_time` (boolean), `referral_source` (friend, performer, venue, social_media, other), `primary_reason` (performer, venue, friends, supporting_local_scene, looking_for_something_to_do). No person identifier is stored by the route.
 
-## Needs confirmation from the Supabase dashboard
+## Not in this repository
 
-None of this can be confirmed from the repository.
-
-- **RLS:** whether it is enabled on each table, and every policy. The code assumes the user client is scoped to the user's organization and the anonymous client sees only confirmed events. Several user-client reads have no `org_id` filter in code and depend on this. What `my_org_id()` does, and whether policies use it.
-- **`event_attendance`:** full column list, types, defaults, primary key and any foreign key.
-- **`user_profiles.has_set_pin` and `display_name`:** types, nullability, defaults.
-- **Column details:** Postgres types, `NOT NULL` and defaults for every column, including `id`, `created_at`, `status`, `role`, `plan` and `confirmation_code`.
-- **Constraints:** primary keys, unique constraints (`slug`, `attendees.email`, `rsvps.confirmation_code`, one RSVP per event and attendee, one `user_profiles` row per `user_id`), check constraints, indexes, and `ON DELETE` behavior of each foreign key. Whether `user_profiles.user_id` references `auth.users`.
-- **Triggers and functions:** how `events.rsvp_count` is maintained (a code comment says a trigger does it), how `confirmation_code` is generated, the bodies of `get_event_pnl` (including which tables it reads) and `my_org_id`, and any job that uses the `reminder_*` columns.
-- **Provisioning:** how organizations and their first `user_profiles` rows are created. No code in `src/` does it.
-- **Realtime:** whether `rsvps` is in the Realtime publication.
+RLS policies, constraints, indexes, triggers and function bodies live in Supabase, not in this repo.
+Check them in the Supabase dashboard; this document does not describe them.
+`event_attendance` and two `user_profiles` columns are missing from the generated types, so their definitions are also in Supabase.
